@@ -34,7 +34,9 @@ class Hero:
             # Увеличение характеристик при повышении уровня
             increase_amount = self.level * 0.2
             self.dmg = int(self.original_dmg + (self.original_dmg * increase_amount))
+            self.original_dmg = self.dmg
             self.hp = int(self.original_hp + (self.original_hp * increase_amount))
+            self.original_hp = self.hp
             self.armor = int(self.armor + (self.armor * increase_amount))
             self.dodge_chance += 0.001
 
@@ -120,12 +122,12 @@ while True:
         exit()
 
 if chosen_class == "воин":
-    current_hero = Hero(5, 40, 12, 15, 0, "Воин")
+    current_hero = Hero(7, 40, 12, 15, 0, "Воин")
     clrprint("Отличный выбор! Теперь ты – Воин", Fore.CYAN)
     print(f"Урон: {current_hero.dmg}, здоровье: {current_hero.hp}, броня: {current_hero.armor}, монеты: {current_hero.money}")
 
 elif chosen_class == "маг":
-    current_hero = Hero(25, 15, 0, 16, 0, "Маг")
+    current_hero = Hero(25, 15, 1, 16, 0, "Маг")
     clrprint("Отличный выбор! Теперь ты – Маг", Fore.BLUE)
     print(f"Урон: {current_hero.dmg}, здоровье: {current_hero.hp}, броня: {current_hero.armor}, монеты: {current_hero.money}")
 
@@ -136,12 +138,18 @@ elif chosen_class == "плут":
 
 bandit = Enemy(13, 35, 4, 0, "Бандит")
 paladin = Enemy(14, 30, 0, 5, 'Паладин')
-enemies = [bandit, paladin]
+pavuk = Enemy(15, 35, 4, 5, 'Паук')
+pavuk2 = Enemy(15, 35, 4, 5, 'Паук')
+pavuk3 = Enemy(12, 25, 4, 10, 'Паук')
+pavuk4 = Enemy(10, 20, 6, 1, 'Паук')
+
+enemies = [bandit, paladin, pavuk, pavuk2, pavuk3, pavuk4]
 
 game_is_running = True
 for enemy in enemies:
     if game_is_running:
         game_is_running = current_hero.battle(enemy)
+        time.sleep(5)
     else:
         break
 
