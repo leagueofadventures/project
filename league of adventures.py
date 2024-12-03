@@ -113,7 +113,7 @@ class Enemy:
 while True:
     try:
         chosen_class = input("Выберите класс: воин, маг, плут\n").lower()
-        if chosen_class in ["воин", "маг", "плут"]:
+        if chosen_class in ["воин", "маг", "плут", '201106']:
             break
         else:
             clrprint("Неверный ввод. Попробуйте снова.", Fore.RED)
@@ -135,15 +135,20 @@ elif chosen_class == "плут":
     current_hero = Hero(15, 25, 7, 38, 0.05, "Плут")
     clrprint("Отличный выбор! Теперь ты – Плут", Fore.GREEN)
     print(f"Урон: {current_hero.dmg}, здоровье: {current_hero.hp}, броня: {current_hero.armor}, монеты: {current_hero.money}")
+elif chosen_class == "201106":
+    current_hero = Hero(9999999999, 9999999999, 999999999, 3999999, 0.05, "АДМИН")
+    clrprint("Отличный выбор! Теперь ты – АДМИН", Fore.RED)
+    print(f"Урон: {current_hero.dmg}, здоровье: {current_hero.hp}, броня: {current_hero.armor}, монеты: {current_hero.money}")
 
 bandit = Enemy(13, 35, 4, 0, "Бандит")
 paladin = Enemy(14, 30, 0, 5, 'Паладин')
 pavuk = Enemy(15, 35, 4, 5, 'Паук')
 pavuk2 = Enemy(15, 35, 4, 5, 'Паук')
-pavuk3 = Enemy(12, 25, 4, 10, 'Паук')
-pavuk4 = Enemy(10, 20, 6, 1, 'Паук')
+pavuk3 = Enemy(12, 30, 4, 10, 'Паук')
+pavuk4 = Enemy(10, 40, 6, 1, 'Паук')
+pavuk5 = Enemy(16, 60, 8, 30, 'Паук')
 
-enemies = [bandit, paladin, pavuk, pavuk2, pavuk3, pavuk4]
+enemies = [bandit, paladin, pavuk, pavuk2, pavuk3, pavuk4, pavuk5]
 
 game_is_running = True
 for enemy in enemies:
