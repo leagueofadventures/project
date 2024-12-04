@@ -20,6 +20,8 @@ class TextInputBox(pygame.sprite.Sprite):
         self.render_text()
 
     def render_text(self):
+
+
         t_surf = self.font.render(self.text, True, self.color, self.backcolor)
         self.image = pygame.Surface((max(self.width, t_surf.get_width()+10), t_surf.get_height()+10), pygame.SRCALPHA)
         if self.backcolor:
@@ -46,6 +48,9 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.text += event.unicode
                 self.render_text()
 
+
+
+
 # Инициализация Pygame
 pygame.init()
 
@@ -63,10 +68,10 @@ group = pygame.sprite.Group(text_input_box)
 
 # Загрузка изображения (убедитесь, что файл "1.png" существует)
 try:
-    image = pygame.image.load("1.png").convert_alpha()
+    image = pygame.image.load("1.png")
     settings_image = pygame.image.load('Settings.png')
     menu_image = pygame.image.load('menu.jpg')
-    second_image = pygame.image.load('dialogue.png')
+    second_image = pygame.image.load('2.png')
     pygame.mixer.music.load('12.mp3')
 except pygame.error:
     image = None
@@ -80,6 +85,10 @@ duration = clip.duration
 
     
 settings_image_rect = settings_image.get_rect()
+
+image_rect = image.get_rect()
+
+second_image_rect = second_image.get_rect()
 
 menu_image_rect = menu_image.get_rect()
 
@@ -95,9 +104,9 @@ WHITE = (255, 255, 255)
 BLUE = ( 66,170,255)
 
 
-text_surface = font_text.render('Испуганный житель:', True, BLUE)
+text_surface = font_text.render('Однажды в одном мире зародилась жизнь', True, BLACK)
 text_rect = text_surface.get_rect()
-text_rect.topleft = (10, 1250)# Пример координат
+text_rect.topleft = (10, 1300)# Пример координат
 
 
 text_surface1 = font_text.render('Настройки', True, BLACK, WHITE)
@@ -138,9 +147,9 @@ text_surface9 = font_text1.render('Здравствуй незнакомец, н
 text_rect9 = text_surface1.get_rect()
 text_rect9.topleft = (400, 1260)# Пример координат
 
-text_surface10 = font_text1.render('Я:', True, BLUE)
+text_surface10 = font_text1.render('В ней появились разные существа. Одни были злые другие добрые а некоторые вообще не относились ни к первым ни к другим.', True, BLACK)
 text_rect10 = text_surface1.get_rect()
-text_rect10.topleft = (10, 1260)# Пример координат
+text_rect10.topleft = (10, 1300)# Пример координат
 
 text_surface11 = font_text1.render('Хорошо. Расскажи мне, что происходит', True, BLACK)
 text_rect11 = text_surface1.get_rect()
@@ -174,7 +183,7 @@ def make_frame(t):
     return surf
 
 running = True
-show_image = 0
+
 show_text = 0
 
 show_settings = 0
@@ -187,8 +196,10 @@ show_video = 0
 show_menu = 1
 
 show_firstimage = 0
-
 music = 0
+
+
+show_image = 0
 
 
 
@@ -200,10 +211,10 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RETURN:
-                screen.fill(WHITE)
+            
+            if event.key == pygame.K_SPACE:
                 show_firstimage = 0
-                show_image += 1
+                show_image = 1
                 show_menu = 0
                 
             elif event.key == pygame.K_1:
@@ -212,7 +223,7 @@ while running:
             elif event.key == pygame.K_2:
                 show_settings = 1
                 if show_menu == 0:
-                    show_settings = 0
+                    show_settings = 2
                     show_menu = 1
 
 
@@ -227,7 +238,6 @@ while running:
 
                 
             elif event.key == pygame.K_ESCAPE:
-                show_text = 0
                 show_settings = 2
                 show_menu = 0
                     
@@ -247,17 +257,18 @@ while running:
     # Получение следующего кадра видео
 
         
-    
+
   
+    if show_image == 1:
+        screen.fill(WHITE)
+        screen.blit(text_surface10, text_rect10)
+        screen.blit(second_image, (0, 0))
+    pygame.display.flip()
+    
     
     # вывод первого изображения 
 
-    if show_image == 1:
-        screen.fill(WHITE)
-        screen.blit(second_image, (0, 0))
-        screen.blit(text_surface10, text_rect10)
-        screen.blit(text_surface11, text_rect11)
-    pygame.display.flip()
+   
 
 
      
@@ -265,22 +276,25 @@ while running:
         screen.fill(WHITE)
         screen.blit(image, (0, 0))
         screen.blit(text_surface, text_rect)
-        screen.blit(text_surface9, text_rect9)
-        
 
 
+    if show_settings == 2:
+        show_settings = 0
     
 
 
     if show_video == 1:
-       show_menu = 0
 
-       current_time = pygame.time.get_ticks() / 1000
-       if current_time <= duration:
-            frame_surface = make_frame(current_time)
-            screen.blit(frame_surface, (0, 0))
 
-       show_firstimage = 1
+        show_menu = 0
+
+        current_time = pygame.time.get_ticks() / 1000
+        if current_time <= duration:
+                frame_surface = make_frame(current_time)
+                screen.blit(frame_surface, (0, 0))
+  
+
+        show_firstimage = 1
 
 
     if show_settings == 2:
@@ -291,13 +305,13 @@ while running:
         screen.blit(text_surface8, text_rect8)
         screen.blit(square_surface, (1100, 500))
         screen.blit(square_surface1, (1100, 700))
-    pygame.display.flip()
+
    
     
     # вывод инпут бокса
     if show_input == 1:
         group.draw(screen)
-    pygame.display.flip()
+
 
         
     if show_menu == 1:
@@ -307,7 +321,7 @@ while running:
         screen.blit(text_surface8, text_rect8)
         screen.blit(square_surface, (1100, 500))
         screen.blit(square_surface1, (1100, 700))
-    pygame.display.flip()
+
 
         
     if show_settings == 1:
