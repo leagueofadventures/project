@@ -73,6 +73,9 @@ try:
     menu_image = pygame.image.load('menu.jpg')
     second_image = pygame.image.load('2.png')
     pygame.mixer.music.load('12.mp3')
+    image_blur = pygame.image.load('1.blur.png')
+
+    second_image_blur = pygame.image.load('2.blur.png')
 except pygame.error:
     image = None
     print("Не удалось загрузить изображение '1.png'.")
@@ -91,6 +94,10 @@ image_rect = image.get_rect()
 second_image_rect = second_image.get_rect()
 
 menu_image_rect = menu_image.get_rect()
+
+image_blur_rect = image_blur.get_rect()
+
+second_image_blur_rect = second_image_blur.get_rect()
 
 
 
@@ -147,13 +154,23 @@ text_surface9 = font_text1.render('Здравствуй незнакомец, н
 text_rect9 = text_surface1.get_rect()
 text_rect9.topleft = (400, 1260)# Пример координат
 
-text_surface10 = font_text1.render('В ней появились разные существа. Одни были злые другие добрые а некоторые вообще не относились ни к первым ни к другим.', True, BLACK)
+text_surface10 = font_text.render('В ней появились разные существа. Одни были злые другие добрые а некоторые вообще не относились ни к первым ни к другим.', True, BLACK)
 text_rect10 = text_surface1.get_rect()
 text_rect10.topleft = (10, 1300)# Пример координат
 
 text_surface11 = font_text1.render('Хорошо. Расскажи мне, что происходит', True, BLACK)
 text_rect11 = text_surface1.get_rect()
 text_rect11.topleft = (200, 1260)# Пример координат
+
+text_surface12 = font_text1.render('Продолжить - 5', True, BLACK)
+text_rect12 = text_surface1.get_rect()
+text_rect12.topleft = (1170, 550)# Пример координат
+
+text_surface13 = font_text1.render('настройки - 4', True, BLACK)
+text_rect13 = text_surface1.get_rect()
+text_rect13.topleft = (1170, 750)# Пример координат
+
+
 
 
 
@@ -169,11 +186,20 @@ square_surface = pygame.Surface((400, 150), pygame.SRCALPHA)
 
 square_surface1 = pygame.Surface((400, 150), pygame.SRCALPHA)
 
+square_surface2 = pygame.Surface((400, 150), pygame.SRCALPHA)
+
+
+square_surface3 = pygame.Surface((400, 150), pygame.SRCALPHA)
+
 # Заполнение поверхности полупрозрачным цветом (например, красным)
 # (R, G, B, alpha)
 square_surface.fill((255, 255, 255, alpha))
 
 square_surface1.fill((255, 255, 255, alpha))
+
+square_surface2.fill((255, 255, 255, alpha))
+
+square_surface3.fill((255, 255, 255, alpha))
 
 
 def make_frame(t):
@@ -201,6 +227,8 @@ music = 0
 
 show_image = 0
 
+show_game_settings = 0
+
 
 
 screen.fill(WHITE)
@@ -226,26 +254,35 @@ while running:
                     show_settings = 2
                     show_menu = 1
 
+            elif event.key == pygame.K_4:
+                show_settings = 1
+                if show_menu == 0:
+                    show_settings = 2
+                    show_menu = 1
+
 
             elif event.key == pygame.K_3:
                 music += 1
                 pygame.mixer.music.play()
                 if music == 2 or music == 4 or music == 6 or music == 8 or music == 10 or music == 12 or music == 14 or music == 16:
                     pygame.mixer.music.stop()
+                    
+
+            elif event.key == pygame.K_ESCAPE and show_firstimage > 0 or show_image > 0:
+                show_game_settings = 1
+
     
                 
-                
-
-                
-            elif event.key == pygame.K_ESCAPE:
-                show_settings = 2
-                show_menu = 0
                     
             elif event.key == pygame.K_t:
                 show_input = 1
                 
             elif event.key == pygame.K_RETURN:
                 show_input = 0
+
+            elif event.key == pygame.K_5 and show_game_settings == 1:
+                show_game_settings = 0
+                show_firstimage = 1
 
     # Обновление всех спрайтов
     group.update(event_list)
@@ -257,7 +294,23 @@ while running:
     # Получение следующего кадра видео
 
         
+    if show_game_settings == 1 and show_firstimage == 1:
+        screen.fill(WHITE)
+        screen.blit(image_blur, (0, 0))
+        screen.blit(square_surface2, (1100, 500))
+        screen.blit(square_surface3, (1100, 700))
+        screen.blit(text_surface12, text_rect12)
+        screen.blit(text_surface13, text_rect13)
 
+    if show_game_settings == 1 and show_image == 1:
+        screen.fill(WHITE)
+        screen.blit(second_image_blur, (0, 0))
+        screen.blit(square_surface2, (1100, 500))
+        screen.blit(square_surface3, (1100, 700))
+        screen.blit(text_surface12, text_rect12)
+        screen.blit(text_surface13, text_rect13)
+        
+        
   
     if show_image == 1:
         screen.fill(WHITE)
@@ -269,7 +322,7 @@ while running:
     # вывод первого изображения 
 
    
-
+    
 
      
     if show_firstimage:
@@ -295,6 +348,8 @@ while running:
   
 
         show_firstimage = 1
+
+
 
 
     if show_settings == 2:
@@ -325,6 +380,7 @@ while running:
 
         
     if show_settings == 1:
+        screen.fill(WHITE)
         show_menu = 0
         screen.fill((255, 255, 255))
         screen.blit(settings_image, (0, 0))
