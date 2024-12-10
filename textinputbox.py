@@ -89,6 +89,7 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.active = False
                     self.text = ""
                     self.render_text()
+                    print("Введенный текст:", input_text)
                 elif event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                     self.render_text()
