@@ -1,15 +1,148 @@
+import pygame
 import random
 import time
-from random import randint
-from colorama import Fore, Back, Style
-from colorama import init
-import json
+from pygame.locals import *
+from colorama import Fore, Style
+import sys
 
-init()
+# --- Инициализация Pygame ---
+pygame.init()
 
-def clrprint(text, color=Fore.WHITE):
-    print(color + text + Style.RESET_ALL)
+# --- Константы окна ---
+WIDTH, HEIGHT = 800, 600
+FPS = 60
+FONT = pygame.font.Font(None, 36)
+BACKGROUND_COLOR = (20, 20, 20)
+TEXT_COLOR = (255, 255, 255)
+ENEMY_COLOR = (255, 50, 50)
+HERO_COLOR = (50, 255, 50)
 
+# --- Создаем экран ---
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+
+input_text = ''
+
+update_text = False
+
+font = pygame.font.Font(None, 50)
+
+BLACK = (0, 0, 0)
+
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+LIGHT_GRAY = (210, 210, 210)
+DARK_GRAY = (169, 169, 169)
+
+counter = 0
+
+class TextInputBox(pygame.sprite.Sprite):
+    def __init__(self, x, y, width, font):
+        super().__init__()
+        self.color = BLACK
+        self.backcolor = None
+        self.pos = (x, y)
+        self.width = width
+        self.font = font
+        self.active = False
+        self.text = ""
+        self.render_text()
+        self.backspace_timer = 0
+        self.backspace_interval = 100
+        self.cursor_visible = True
+        self.cursor_timer = pygame.time.get_ticks()
+        self.last_key_down = None
+
+    def render_text(self):
+        words = self.text.split(' ')
+        lines = []
+        if words:
+            current_line = words[0]
+            for word in words[1:]:
+                if self.font.size(current_line + ' ' + word)[0] <= self.width - 10:
+                    current_line += ' ' + word
+                else:
+                    lines.append(current_line)
+                    current_line = word
+            lines.append(current_line)
+
+        height = len(lines) * self.font.get_height() + 10
+        self.image = pygame.Surface((self.width, height), pygame.SRCALPHA)
+        self.image.fill(self.backcolor or (0, 0, 0, 0))
+        for i, line in enumerate(lines):
+            t_surf = self.font.render(line, True, self.color)
+            self.image.blit(t_surf, (5, 5 + i * self.font.get_height()))
+        pygame.draw.rect(self.image, self.color if self.active else DARK_GRAY, self.image.get_rect().inflate(-2, -2), 2)
+        if self.active and self.cursor_visible:
+            cursor_y = 5 + (len(lines) - 1) * self.font.get_height()
+            cursor_x = 5 + self.font.size(current_line)[0]
+            pygame.draw.rect(self.image, self.color, (cursor_x, cursor_y, 2, self.font.get_height()))
+        self.rect = self.image.get_rect(topleft=self.pos)
+
+    def update(self, events):
+        global update_text, input_text, counter
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.rect.collidepoint(event.pos):
+                    self.active = True
+                else:
+                    self.active = False
+            if event.type == pygame.KEYDOWN and self.active:
+                if event.key == pygame.K_RETURN:
+                    input_text = self.text
+                    self.active = False
+                    self.text = ""
+                    self.render_text()
+                    update_text = True
+                elif event.key == pygame.K_BACKSPACE:
+                    self.text = self.text[:-1]
+                    self.render_text()
+                elif event.key == pygame.K_DELETE:
+                    self.text = ""
+                    self.render_text()
+                else:
+                    if self.last_key_down != event.key:
+                        self.text += event.unicode
+                        self.render_text()
+                        self.last_key_down = event.key
+            if event.type == pygame.KEYUP and self.active:
+                self.last_key_down = None
+
+            if self.active:
+                keys = pygame.key.get_pressed()
+                if keys[pygame.K_BACKSPACE]:
+                    current_time = pygame.time.get_ticks()
+                    if current_time - self.backspace_timer > self.backspace_interval:
+                        self.text = self.text[:-1]
+                        self.render_text()
+                        self.backspace_timer = current_time
+
+        if update_text and self.active:
+            self.render_text()
+            update_text = False
+
+        if counter % 20 == 0:
+            self.backcolor = LIGHT_GRAY
+        else:
+            self.backcolor = DARK_GRAY
+        self.render_text()
+
+        current_time = pygame.time.get_ticks()
+        if current_time - self.cursor_timer > 500:
+            self.cursor_visible = not self.cursor_visible
+            self.cursor_timer = current_time
+            self.render_text()
+
+
+text_input_box = TextInputBox(1000, 1300, 400, font)
+group = pygame.sprite.Group(text_input_box)
+
+
+# --- Функция для текста на экране ---
+def draw_text(text, x, y, color=TEXT_COLOR):
+    render = FONT.render(text, True, color)
+    screen.blit(render, (x, y))
+
+# --- Класс Героя ---
 class Hero:
     def __init__(self, dmg, hp, armor, money, dodge_chance, name):
         self.dmg = dmg
@@ -29,9 +162,7 @@ class Hero:
             self.level += 1
             self.next_level_exp *= 2
             self.exp = 0
-            clrprint(f"{self.name} поднялся на уровень {self.level}!", Fore.GREEN)
 
-            # Увеличение характеристик при повышении уровня
             increase_amount = self.level * 0.2
             self.dmg = int(self.original_dmg + (self.original_dmg * increase_amount))
             self.original_dmg = self.dmg
@@ -40,68 +171,27 @@ class Hero:
             self.armor = int(self.armor + (self.armor * increase_amount))
             self.dodge_chance += 0.001
 
-            clrprint("Характеристики после повышения уровня:", Fore.YELLOW)
-            clrprint(f"  Уровень: {self.level}", Fore.YELLOW)
-            clrprint(f"  Урон: {self.dmg}", Fore.YELLOW)
-            clrprint(f"  Здоровье: {self.hp}", Fore.YELLOW)
-            clrprint(f"  Броня: {self.armor}", Fore.YELLOW)
-            clrprint(f"  Шанс уклонения: {self.dodge_chance:.2%}", Fore.YELLOW)  # Форматирование в процентах
-
     def gain_experience_and_gold(self, exp_gain, gold_gain):
         self.exp += exp_gain
         self.money += gold_gain
-        clrprint(f"{self.name} получил {exp_gain} опыта и {gold_gain} монет.", Fore.GREEN)
         self.level_up()
 
     def restore_health(self):
         self.hp = self.original_hp
-        clrprint(f"{self.name} восстановил своё здоровье до {self.hp}", Fore.GREEN)
 
-    def battle(self, enemy):
-        while self.hp > 0 and enemy.hp > 0:
-            body_part = random.choice(['head', 'body', 'body', 'body', 'leg', 'leg', 'leg', 'arm', 'arm', 'arm'])
-            if body_part == 'head':
-                hero_dmg = int(max(1, self.dmg * 2 - enemy.armor))
-            elif body_part == 'body':
-                hero_dmg = int(max(1, self.dmg - enemy.armor))
-            elif body_part == 'leg':
-                hero_dmg = int(max(1, self.dmg / 1.2 - enemy.armor))
-            elif body_part == 'arm':
-                hero_dmg = int(max(1, self.dmg / 1.5 - enemy.armor))
-
-            clrprint(f"{self.name} наносит {hero_dmg} урона в {body_part}.", Fore.GREEN)
-            enemy.hp -= hero_dmg
-            time.sleep(1)
-
-            if enemy.hp <= 0:
-                break
-
-            krite = random.choice(['head', 'body', 'body', 'body', 'body', 'body', 'body', 'body', 'body', 'body', 'body'])
-            if krite == 'head':
-                enemy_dmg = max(1, enemy.dmg * 2 - self.armor)
-                damage_message = f"КРИТ! {enemy.name} наносит {enemy_dmg} урона"
-                clrprint(damage_message, Fore.RED)
-            else:
-                enemy_dmg = max(1, enemy.dmg - self.armor)
-                clrprint(f"{enemy.name} наносит {enemy_dmg} урона", Fore.RED)
-
-            if random.random() < self.dodge_chance:
-                clrprint(f"{self.name} успешно уклонился!", Fore.GREEN)
-            else:
-                self.hp -= enemy_dmg
-
-            time.sleep(1)
-
-        if self.hp > 0:
-            clrprint("Вы победили!", Fore.YELLOW)
-            self.gain_experience_and_gold(50, 5)
-            self.restore_health()
-            return True
+    def attack(self, enemy):
+        body_part = random.choice(['head', 'body', 'leg', 'arm'])
+        if body_part == 'head':
+            damage = max(1, self.dmg * 2 - enemy.armor)
+        elif body_part == 'body':
+            damage = max(1, self.dmg - enemy.armor)
+        elif body_part == 'leg':
+            damage = max(1, self.dmg / 1.2 - enemy.armor)
         else:
-            clrprint("Вы проиграли.", Fore.MAGENTA)
-            clrprint("Игра окончена.", Fore.RED)
-            return False
+            damage = max(1, self.dmg / 1.5 - enemy.armor)
+        return damage, body_part
 
+# --- Класс Врага ---
 class Enemy:
     def __init__(self, dmg, hp, armor, dodge_chance, name):
         self.name = name
@@ -110,52 +200,104 @@ class Enemy:
         self.armor = armor
         self.dodge_chance = dodge_chance
 
-while True:
-    try:
-        chosen_class = input("Выберите класс: воин, маг, плут\n").lower()
-        if chosen_class in ["воин", "маг", "плут", '201106']:
-            break
+    def attack(self, hero):
+        krite = random.choice(['head', 'body'])
+        if krite == 'head':
+            damage = max(1, self.dmg * 2 - hero.armor)
         else:
-            clrprint("Неверный ввод. Попробуйте снова.", Fore.RED)
-    except KeyboardInterrupt:
-        clrprint("\nПрограмму остановил пользователь.", Fore.RED)
-        exit()
+            damage = max(1, self.dmg - hero.armor)
+        return damage
 
-if chosen_class == "воин":
-    current_hero = Hero(7, 40, 12, 15, 0, "Воин")
-    clrprint("Отличный выбор! Теперь ты – Воин", Fore.CYAN)
-    print(f"Урон: {current_hero.dmg}, здоровье: {current_hero.hp}, броня: {current_hero.armor}, монеты: {current_hero.money}")
+# --- Функция боя ---
+def battle(hero, enemy):
+    clock = pygame.time.Clock()
+    running = True
+    message = ""
+    while running:
+        screen.fill(BACKGROUND_COLOR)
+        draw_text(f"{hero.name}: HP {hero.hp}/{hero.original_hp}", 10, 1300, HERO_COLOR)
+        draw_text(f"{enemy.name}: HP {enemy.hp}", 10, 1350, ENEMY_COLOR)
+        draw_text(message, 1500, 1300)
 
-elif chosen_class == "маг":
-    current_hero = Hero(25, 15, 1, 16, 0, "Маг")
-    clrprint("Отличный выбор! Теперь ты – Маг", Fore.BLUE)
-    print(f"Урон: {current_hero.dmg}, здоровье: {current_hero.hp}, броня: {current_hero.armor}, монеты: {current_hero.money}")
+        pygame.display.flip()
+        clock.tick(FPS)
 
-elif chosen_class == "плут":
-    current_hero = Hero(15, 25, 7, 38, 0.05, "Плут")
-    clrprint("Отличный выбор! Теперь ты – Плут", Fore.GREEN)
-    print(f"Урон: {current_hero.dmg}, здоровье: {current_hero.hp}, броня: {current_hero.armor}, монеты: {current_hero.money}")
-elif chosen_class == "201106":
-    current_hero = Hero(9999999999, 9999999999, 999999999, 3999999, 0.05, "АДМИН")
-    clrprint("Отличный выбор! Теперь ты – АДМИН", Fore.RED)
-    print(f"Урон: {current_hero.dmg}, здоровье: {current_hero.hp}, броня: {current_hero.armor}, монеты: {current_hero.money}")
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == KEYDOWN:
+                if event.key == K_SPACE:
+                    damage, part = hero.attack(enemy)
+                    enemy.hp -= damage
+                    message = f"{hero.name} ударил по {part} на {damage} урона!"
+                    if enemy.hp <= 0:
+                        message = f"{enemy.name} повержен!"
+                        hero.gain_experience_and_gold(50, 5)
+                        hero.restore_health()
+                        running = False
+                        break
 
-bandit = Enemy(13, 35, 4, 0, "Бандит")
-paladin = Enemy(14, 30, 0, 5, 'Паладин')
-pavuk = Enemy(15, 35, 4, 5, 'Паук')
-pavuk2 = Enemy(15, 35, 4, 5, 'Паук')
-pavuk3 = Enemy(12, 30, 4, 10, 'Паук')
-pavuk4 = Enemy(10, 40, 6, 1, 'Паук')
-pavuk5 = Enemy(16, 60, 8, 30, 'Паук')
+                    if random.random() > hero.dodge_chance:
+                        damage = enemy.attack(hero)
+                        hero.hp -= damage
+                        message += f" {enemy.name} ответил на {damage} урона!"
+                    else:
+                        message += f" {hero.name} увернулся от атаки!"
 
-enemies = [bandit, paladin, pavuk, pavuk2, pavuk3, pavuk4, pavuk5]
+                    if hero.hp <= 0:
+                        message = "Вы проиграли. Игра окончена!"
+                        running = False
 
-game_is_running = True
-for enemy in enemies:
-    if game_is_running:
-        game_is_running = current_hero.battle(enemy)
-        time.sleep(5)
-    else:
-        break
+# --- Главная программа ---
+def main():
+    global input_text, counter
+    running = True
+    clock = pygame.time.Clock()
+    hero = None
+    enemies = [
+        Enemy(13, 35, 4, 0, "Бандит"),
+        Enemy(14, 30, 0, 0, "Паладин"),
+        Enemy(15, 35, 4, 0, "Паук")
+    ]
+    enemy_index = 0
 
-input()
+    while running:
+        screen.fill(BACKGROUND_COLOR)
+        events = pygame.event.get()
+        for event in events:
+            if event.type == QUIT:
+                running = False
+            if hero is None:
+                text_input_box.update(events) 
+
+        if hero is None:
+            draw_text("Выберите класс: воин, маг, плут", 10, 1300)
+            group.draw(screen) 
+            if input_text == 'воин':
+                hero = Hero(7, 40, 12, 15, 0, "Воин")
+                input_text = '' 
+            elif 'маг' in input_text:
+                hero = Hero(25, 15, 1, 16, 0, "Маг")
+                input_text = ''
+            elif 'плут' in input_text:
+                hero = Hero(15, 25, 7, 38, 0.05, "Плут")
+                input_text = ''
+        elif enemy_index < len(enemies):
+            battle(hero, enemies[enemy_index])
+            if hero.hp <= 0:
+                running = False
+            else:
+                enemy_index += 1
+        else:
+            draw_text("Игра завершена. Победа!", 10, 1300)
+
+        pygame.display.flip()
+        clock.tick(FPS)
+        counter += 1
+
+    pygame.quit()
+    sys.exit()
+
+if __name__ == "__main__":
+    main()
