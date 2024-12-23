@@ -151,7 +151,7 @@ class Hero:
         self.original_hp = hp
         self.armor = armor
         self.money = money
-        self.dodge_chance = dodge_chance
+        self.dodge_chance = int(dodge_chance * 100)  # Преобразуем в проценты и округляем
         self.name = name
         self.level = 1
         self.exp = 0
@@ -164,12 +164,23 @@ class Hero:
             self.exp = 0
 
             increase_amount = self.level * 0.2
-            self.dmg = int(self.original_dmg + (self.original_dmg * increase_amount))
+            # Балансировка классов
+            if self.name == "Воин":
+              self.dmg = int(self.original_dmg + (self.original_dmg * increase_amount * 0.7))
+              self.hp = int(self.original_hp + (self.original_hp * increase_amount * 1.2))
+              self.armor = int(self.armor + (self.armor * increase_amount * 0.8))
+            elif self.name == "Маг":
+              self.dmg = int(self.original_dmg + (self.original_dmg * increase_amount * 1.3))
+              self.hp = int(self.original_hp + (self.original_hp * increase_amount * 0.7))
+              self.armor = int(self.armor + (self.armor * increase_amount * 0.5))
+            elif self.name == "Плут":
+              self.dmg = int(self.original_dmg + (self.original_dmg * increase_amount * 1))
+              self.hp = int(self.original_hp + (self.original_hp * increase_amount))
+              self.armor = int(self.armor + (self.armor * increase_amount * 0.6))
+            
             self.original_dmg = self.dmg
-            self.hp = int(self.original_hp + (self.original_hp * increase_amount))
             self.original_hp = self.hp
-            self.armor = int(self.armor + (self.armor * increase_amount))
-            self.dodge_chance += 0.001
+            self.dodge_chance += 1 # Увеличиваем шанс уворота на 1% за уровень
 
     def gain_experience_and_gold(self, exp_gain, gold_gain):
         self.exp += exp_gain
@@ -181,32 +192,36 @@ class Hero:
 
     def attack(self, enemy):
         body_part = random.choice(['head', 'body', 'leg', 'arm'])
+        crit_chance = 10 if self.name != "Плут" else 25 # У плута выше шанс крита в %
+        is_crit = random.randint(1, 100) <= crit_chance
+
         if body_part == 'head':
-            damage = max(1, self.dmg * 2 - enemy.armor)
+            damage = self.dmg * 2 if is_crit else self.dmg * 1.5
         elif body_part == 'body':
-            damage = max(1, self.dmg - enemy.armor)
+            damage = self.dmg * 1.5 if is_crit else self.dmg
         elif body_part == 'leg':
-            damage = max(1, self.dmg / 1.2 - enemy.armor)
-        else:
-            damage = max(1, self.dmg / 1.5 - enemy.armor)
-        return damage, body_part
+            damage = self.dmg * 1.2 if is_crit else self.dmg * 0.8
+        else:  # arm
+            damage = self.dmg * 1.1 if is_crit else self.dmg * 0.7
+
+        damage = int(max(1, damage - enemy.armor))
+        return damage, body_part, is_crit
 
 # --- Класс Врага ---
 class Enemy:
-    def __init__(self, dmg, hp, armor, dodge_chance, name):
+    def __init__(self, dmg, hp, armor, dodge_chance, name, crit_chance=10):
         self.name = name
         self.dmg = dmg
         self.hp = hp
         self.armor = armor
         self.dodge_chance = dodge_chance
+        self.crit_chance = crit_chance
 
     def attack(self, hero):
-        krite = random.choice(['head', 'body'])
-        if krite == 'head':
-            damage = max(1, self.dmg * 2 - hero.armor)
-        else:
-            damage = max(1, self.dmg - hero.armor)
-        return damage
+        is_crit = random.randint(1, 100) <= self.crit_chance
+        damage = self.dmg * 2 if is_crit else self.dmg
+        damage = int(max(1, damage - hero.armor))
+        return damage, is_crit
 
 # --- Функция боя ---
 def battle(hero, enemy):
@@ -215,7 +230,7 @@ def battle(hero, enemy):
     message = ""
     while running:
         screen.fill(BACKGROUND_COLOR)
-        draw_text(f"{hero.name}: HP {hero.hp}/{hero.original_hp}", 10, 1300, HERO_COLOR)
+        draw_text(f"{hero.name}: HP {hero.hp}/{hero.original_hp}, Уровень: {hero.level}, Деньги: {hero.money}, Опыт: {hero.exp}/{hero.next_level_exp}, Шанс уворота: {hero.dodge_chance}%", 10, 1300, HERO_COLOR)
         draw_text(f"{enemy.name}: HP {enemy.hp}", 10, 1350, ENEMY_COLOR)
         draw_text(message, 1500, 1300)
 
@@ -228,20 +243,22 @@ def battle(hero, enemy):
                 sys.exit()
             elif event.type == KEYDOWN:
                 if event.key == K_SPACE:
-                    damage, part = hero.attack(enemy)
+                    damage, part, is_hero_crit = hero.attack(enemy)
                     enemy.hp -= damage
-                    message = f"{hero.name} ударил по {part} на {damage} урона!"
+                    crit_msg = "КРИТИЧЕСКИЙ УДАР! " if is_hero_crit else ""
+                    message = f"{crit_msg}{hero.name} ударил по {part} на {damage} урона!"
                     if enemy.hp <= 0:
                         message = f"{enemy.name} повержен!"
-                        hero.gain_experience_and_gold(50, 5)
+                        hero.gain_experience_and_gold(50, 15)
                         hero.restore_health()
                         running = False
                         break
 
-                    if random.random() > hero.dodge_chance:
-                        damage = enemy.attack(hero)
+                    if random.randint(1, 100) > hero.dodge_chance:
+                        damage, is_enemy_crit = enemy.attack(hero)
                         hero.hp -= damage
-                        message += f" {enemy.name} ответил на {damage} урона!"
+                        crit_msg = "КРИТИЧЕСКИЙ УДАР! " if is_enemy_crit else ""
+                        message += f" {crit_msg}{enemy.name} ответил на {damage} урона!"
                     else:
                         message += f" {hero.name} увернулся от атаки!"
 
@@ -256,9 +273,9 @@ def main():
     clock = pygame.time.Clock()
     hero = None
     enemies = [
-        Enemy(13, 35, 4, 0, "Бандит"),
-        Enemy(14, 30, 0, 0, "Паладин"),
-        Enemy(15, 35, 4, 0, "Паук")
+        Enemy(13, 45, 4, 2, "Бандит", crit_chance=5),
+        Enemy(20, 60, 8, 5, "Паладин", crit_chance=10),
+        Enemy(18, 40, 2, 10, "Паук", crit_chance=20)
     ]
     enemy_index = 0
 
@@ -269,19 +286,19 @@ def main():
             if event.type == QUIT:
                 running = False
             if hero is None:
-                text_input_box.update(events) 
+                text_input_box.update(events)
 
         if hero is None:
             draw_text("Выберите класс: воин, маг, плут", 10, 1300)
-            group.draw(screen) 
+            group.draw(screen)
             if input_text == 'воин':
                 hero = Hero(7, 40, 12, 15, 0, "Воин")
-                input_text = '' 
+                input_text = ''
             elif 'маг' in input_text:
                 hero = Hero(25, 15, 1, 16, 0, "Маг")
                 input_text = ''
             elif 'плут' in input_text:
-                hero = Hero(15, 25, 7, 38, 0.05, "Плут")
+                hero = Hero(15, 25, 7, 38, 5, "Плут")
                 input_text = ''
         elif enemy_index < len(enemies):
             battle(hero, enemies[enemy_index])
