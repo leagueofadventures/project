@@ -1,7 +1,7 @@
 import pygame
 from pygame.locals import *
 import sys
-import time 
+import time
 from moviepy.editor import VideoFileClip
 
 # Define colors
@@ -38,7 +38,7 @@ class TextInputBox(pygame.sprite.Sprite):
         self.cursor_timer = pygame.time.get_ticks()
 
     def render_text(self):
-        words = self.text.split(' ') 
+        words = self.text.split(' ')
         lines = []
         if words:
             current_line = words[0]
@@ -49,7 +49,7 @@ class TextInputBox(pygame.sprite.Sprite):
                     lines.append(current_line)
                     current_line = word
             lines.append(current_line)
-        
+
         height = len(lines) * self.font.get_height() + 10
         self.image = pygame.Surface((self.width, height), pygame.SRCALPHA)
         self.image.fill(self.backcolor or (0, 0, 0, 0))
@@ -119,7 +119,7 @@ pygame.init()
 pygame.mixer.init()
 
 # Установите разрешение экрана по необходимости. Здесь используется полный экран.
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)  
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen_width, screen_height = screen.get_size()
 
 # Параметры текста в инпут
@@ -131,14 +131,29 @@ group = pygame.sprite.Group(text_input_box)
 # Загрузка изображений и аудио
 try:
     image = pygame.image.load("1.png")
+    
     settings_image = pygame.image.load('Settings.png')
+    
     menu_image = pygame.image.load('menu.jpg')
+    
     second_image = pygame.image.load('2.png')
+
+    #Загрузка музыки
+    
     pygame.mixer.music.load('12.mp3')
+    
     image_blur = pygame.image.load('1.blur.png')
+    
     third_image = pygame.image.load('3.png')
+    
     third_image_blur = pygame.image.load('3.blur.png')
+    
     second_image_blur = pygame.image.load('2.blur.png')
+    
+    fourth_image = pygame.image.load('4.png')
+
+    fourth_image_blur = pygame.image.load('4.blur.png')
+    
 except pygame.error:
     image = None
     print("Не удалось загрузить одно из изображений.")
@@ -168,65 +183,50 @@ WHITE = (255, 255, 255)
 BLUE = (66, 170, 255)
 
 # Создание текстовых поверхностей
-text_surface = font_text.render('Однажды в одном мире зародилась жизнь', True, BLACK)
-text_rect = text_surface.get_rect()
-text_rect.topleft = (10, 1300)  # Пример координат
-
-text_surface1 = font_text.render('Настройки', True, BLACK, WHITE)
+text_surface1 = font_text.render('Однажды в одном мире зародилась жизнь', True, BLACK)
 text_rect1 = text_surface1.get_rect()
-text_rect1.topleft = (1200, 400)  # Пример координат
+text_rect1.topleft = (10, 1300)  # Пример координат
 
-text_surface2 = font_text1.render('Для вывода следующего изображения нажмите "пробел"', True, BLACK, WHITE)
+
+
+
+text_surface_menu_play = font_text1.render('Чтобы играть, нажмите 1', True, BLACK, WHITE)
+text_rect_menu_play = text_surface_menu_play.get_rect()
+text_rect_menu_play.topleft = (1150, 550)  # Пример координат
+
+text_surface_menu_settings = font_text1.render('Чтобы зайти в настройки,', True, BLACK, WHITE)
+text_rect_menu_settings = text_surface_menu_settings.get_rect()
+text_rect_menu_settings.topleft = (1150, 750)  # Пример координат
+
+text_surface_menu_settings_2 = font_text1.render('нажмите 2', True, BLACK, WHITE)
+text_rect_menu_settings_2 = text_surface_menu_settings_2.get_rect()
+text_rect_menu_settings_2.topleft = (1230, 790)  # Пример координат
+
+
+
+text_surface2 = font_text.render('В ней появились разные существа. Одни были злые другие добрые а некоторые вообще не относились ни к первым ни к другим.', True, BLACK)
 text_rect2 = text_surface2.get_rect()
-text_rect2.topleft = (100, 500)  # Пример координат
+text_rect2.topleft = (10, 1300)  # Пример координат
 
-text_surface3 = font_text1.render('Для ввода текста нажмите "t"', True, BLACK, WHITE)
+text_surface3 = font_text.render('Они могли помогать нежити и уничтожать добрых. Но и наоборот.', True, BLACK)
 text_rect3 = text_surface3.get_rect()
-text_rect3.topleft = (100, 550)  # Пример координат
+text_rect3.topleft = (10, 1350)  # Пример координат
 
-text_surface4 = font_text1.render('Для повторного открытия настроек нажмите "esc"', True, BLACK, WHITE)
+text_surface_pause = font_text1.render('Продолжить - 5', True, BLACK)
+text_rect_pause = text_surface_pause.get_rect()
+text_rect_pause.topleft = (1170, 550)  # Пример координат
+
+text_surface_pause_settings = font_text1.render('настройки - 4', True, BLACK, WHITE)
+text_rect_pause_settings = text_surface_pause_settings.get_rect()
+text_rect_pause_settings.topleft = (1170, 750)  # Пример координат
+
+text_surface4 = font_text.render('В этом мире зародилась цивилизация и в некоторых местах появились некие постройки.', True, BLACK)
 text_rect4 = text_surface4.get_rect()
-text_rect4.topleft = (1500, 500)  # Пример координат
+text_rect4.topleft = (10, 1300)  # Пример координат
 
-text_surface5 = font_text1.render('Для закрытия настроек после вывода изображения нажмите "esc"', True, BLACK, WHITE)
+text_surface5 = font_text.render('Среди этих построек и зародилась одна особенная деревня.', True, BLACK)
 text_rect5 = text_surface5.get_rect()
-text_rect5.topleft = (1500, 550)  # Пример координат
-
-text_surface6 = font_text1.render('Чтобы играть, нажмите 1', True, BLACK, WHITE)
-text_rect6 = text_surface6.get_rect()
-text_rect6.topleft = (1150, 550)  # Пример координат
-
-text_surface7 = font_text1.render('Чтобы зайти в настройки,', True, BLACK, WHITE)
-text_rect7 = text_surface7.get_rect()
-text_rect7.topleft = (1150, 750)  # Пример координат
-
-text_surface8 = font_text1.render('нажмите 2', True, BLACK, WHITE)
-text_rect8 = text_surface8.get_rect()
-text_rect8.topleft = (1230, 790)  # Пример координат
-
-text_surface9 = font_text1.render('Здравствуй незнакомец, на нашу деревню напали варвары, помоги нам защитить нашу деревню от них!', True, BLACK)
-text_rect9 = text_surface9.get_rect()
-text_rect9.topleft = (400, 1260)  # Пример координат
-
-text_surface10 = font_text.render('В ней появились разные существа. Одни были злые другие добрые а некоторые вообще не относились ни к первым ни к другим.', True, BLACK)
-text_rect10 = text_surface10.get_rect()
-text_rect10.topleft = (10, 1300)  # Пример координат
-
-text_surface11 = font_text.render('Они могли помогать нежити и уничтожать добрых. Но и наоборот.', True, BLACK)
-text_rect11 = text_surface11.get_rect()
-text_rect11.topleft = (10, 1350)  # Пример координат
-
-text_surface12 = font_text1.render('Продолжить - 5', True, BLACK)
-text_rect12 = text_surface12.get_rect()
-text_rect12.topleft = (1170, 550)  # Пример координат
-
-text_surface13 = font_text1.render('настройки - 4', True, BLACK, WHITE)
-text_rect13 = text_surface13.get_rect()
-text_rect13.topleft = (1170, 750)  # Пример координат
-
-text_surface14 = font_text.render('В этом мире зародилась цивилизация и в некоторых местах появились некие постройки. Среди этих построек и зародилась одна особенная деревня. В ней поселились очень добрые жители и они делились между собой чем угодно.', True, BLACK)
-text_rect14 = text_surface14.get_rect()
-text_rect14.topleft = (10, 1300)  # Пример координат
+text_rect5.topleft = (10, 1350)  # Пример координат
 
 # Установка прозрачности (alpha). 128 — это значение для полупрозрачности (50%).
 alpha = 128
@@ -261,6 +261,12 @@ music = 0
 show_image = 0
 show_game_settings = 0
 
+blur1 = 0
+
+blur2 = 0
+
+blur3 = 0
+
 # Основной цикл
 screen.fill(WHITE)
 while running:
@@ -271,12 +277,16 @@ while running:
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
-                show_firstimage = 0
-                show_image += 1
-                show_menu = 0
+                if show_game_settings == 1:
+                    pass
+                if show_game_settings == 0:
+                    show_firstimage = 0
+                    show_image += 1
+                    show_menu = 0
 
             elif event.key == pygame.K_1:
                 show_video = 1
+                show_menu = 0
 
             elif event.key == pygame.K_2:
                 show_settings = 1
@@ -285,9 +295,7 @@ while running:
                     show_menu = 1
 
             elif event.key == pygame.K_4 and show_game_settings == 1:
-                screen.fill(WHITE)
-                screen.blit(settings_image, (0, 0))
-                pygame.display.flip()
+                show_game_settings = 2
 
             elif event.key == pygame.K_3:
                 music += 1
@@ -295,11 +303,9 @@ while running:
                 if music in [2, 4, 6, 8, 10, 12, 14, 16]:
                     pygame.mixer.music.stop()
 
-            elif event.key == pygame.K_ESCAPE and show_firstimage == 1 or show_image == 1:
+            elif event.key == pygame.K_ESCAPE and (show_firstimage == 1 or show_image >= 1):
                 show_game_settings = 1
-
-                show_firstimage = 0
-
+                show_video = 0
 
 
             elif event.key == pygame.K_t:
@@ -308,91 +314,120 @@ while running:
             elif event.key == pygame.K_RETURN:
                 show_input = 0
 
-            elif event.key == pygame.K_5 and show_game_settings == 1:
-                show_game_settings = 0
-                show_firstimage = 1
+            elif event.key == pygame.K_5:
+                if show_firstimage == 1:
+                    show_game_settings = 0
+                    show_firstimage = 1
+                    show_image = 0
+                    
+                elif show_image == 1:
+                    show_game_settings = 0
+                    show_image = 1
+                    show_firstimage = 0
+
+                elif show_image == 2:
+                    show_game_settings = 0
+                    show_image = 2
+                    show_firstimage = 0
+
+                elif show_image == 3:
+                    show_game_settings = 0
+                    show_image = 3
+                    show_firstimage = 0
 
     # Обновление всех спрайтов
     group.update(event_list)
 
     # Логика выбора отображаемых элементов
-    if show_game_settings == 1 and show_firstimage == 1:
+    if show_game_settings == 2:
         screen.fill(WHITE)
-        screen.blit(image_blur, (0, 0))
-        screen.blit(square_surface2, (1100, 500))
-        screen.blit(square_surface3, (1100, 700))
-        screen.blit(text_surface12, text_rect12)
-        screen.blit(text_surface13, text_rect13)
-    pygame.display.flip()
+        screen.blit(settings_image, (0, 0))
 
-    if show_game_settings == 1 and show_image == 1:
-        screen.fill(WHITE)
-        screen.blit(second_image_blur, (0, 0))
-        screen.blit(square_surface2, (1100, 500))
-        screen.blit(square_surface3, (1100, 700))
-        screen.blit(text_surface12, text_rect12)
-        screen.blit(text_surface13, text_rect13)
+    elif show_game_settings == 1:
+        if show_firstimage == 1:
+            screen.fill(WHITE)
+            screen.blit(image_blur, (0, 0))
+            screen.blit(square_surface2, (1100, 500))
+            screen.blit(square_surface3, (1100, 700))
+            screen.blit(text_surface_pause, text_rect_pause)
+            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
+       
 
-    if show_game_settings == 1 and show_image == 2:
-        screen.fill(WHITE)
-        screen.blit(third_image_blur, (0, 0))
-        screen.blit(square_surface2, (1100, 500))
-        screen.blit(square_surface3, (1100, 700))
-        screen.blit(text_surface12, text_rect12)
-        screen.blit(text_surface13, text_rect13)
+        elif show_image == 1:
+            show_firstimage = 0
+            screen.fill(WHITE)
+            screen.blit(second_image_blur, (0, 0))
+            screen.blit(square_surface2, (1100, 500))
+            screen.blit(square_surface3, (1100, 700))
+            screen.blit(text_surface_pause, text_rect_pause)
+            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
+       
 
-    if show_image == 1:
+        elif show_image == 2:
+            show_firstimage = 0
+            screen.fill(WHITE)
+            screen.blit(third_image_blur, (0, 0))
+            screen.blit(square_surface2, (1100, 500))
+            screen.blit(square_surface3, (1100, 700))
+            screen.blit(text_surface_pause, text_rect_pause)
+            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
+
+        elif show_image == 3:
+            show_firstimage = 0
+            screen.fill(WHITE)
+            screen.blit(fourth_image_blur, (0, 0))
+            screen.blit(square_surface2, (1100, 500))
+            screen.blit(square_surface3, (1100, 700))
+            screen.blit(text_surface_pause, text_rect_pause)
+            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
+
+
+    elif show_image == 1:
         show_firstimage = 0
-        
         screen.fill(WHITE)
-        screen.blit(text_surface10, text_rect10)
-        screen.blit(text_surface11, text_rect11)
+        screen.blit(text_surface2, text_rect2)
+        screen.blit(text_surface3, text_rect3)
         screen.blit(second_image, (0, 0))
-    # Removed duplicate pygame.display.flip()
 
-    if show_image == 2:
+    elif show_image == 2:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(third_image, (0, 0))
-        screen.blit(text_surface14, text_rect14)
-    # Removed duplicate pygame.display.flip()
+        screen.blit(text_surface3, text_rect3)
+
+    elif show_image == 3:
+        show_firstimage = 0
+        screen.fill(WHITE)
+        screen.blit(fourth_image, (0, 0))
+        screen.blit(text_surface4, text_rect4)
+        screen.blit(text_surface5, text_rect5)
+
+    
 
     # Вывод первого изображения 
-    if show_firstimage:
+    elif show_firstimage:
         screen.fill(WHITE)
         screen.blit(image, (0, 0))
-        screen.blit(text_surface, text_rect)
+        screen.blit(text_surface1, text_rect1)
 
-    if show_settings == 2:
+    elif show_settings == 2:
         show_settings = 0
 
-    if show_video == 1:
-        show_menu = 0
+    elif show_video == 1:
         current_time = pygame.time.get_ticks() / 1000
         if current_time <= duration:
             frame_surface = make_frame(current_time)
             screen.blit(frame_surface, (0, 0))
-        show_firstimage = 1
-
-    if show_settings == 2:
-        show_menu = 1
-        screen.blit(menu_image, (0, 0))
-        screen.blit(text_surface6, text_rect6)
-        screen.blit(text_surface7, text_rect7)
-        screen.blit(text_surface8, text_rect8)
-        screen.blit(square_surface, (1100, 500))
-        screen.blit(square_surface1, (1100, 700))
-
-    # Вывод инпут бокса
-    if show_input == 1:
-        group.draw(screen)
+        else:
+            show_video = 0
+            show_firstimage = 1
 
     # Вывод меню
-    if show_menu == 1:
+    elif show_menu == 1:
         screen.blit(menu_image, (0, 0))
-        screen.blit(text_surface6, text_rect6)
-        screen.blit(text_surface7, text_rect7)
-        screen.blit(text_surface8, text_rect8)
+        screen.blit(text_surface_menu_play, text_rect_menu_play)
+        screen.blit(text_surface_menu_settings, text_rect_menu_settings)
+        screen.blit(text_surface_menu_settings_2, text_rect_menu_settings_2)
         screen.blit(square_surface, (1100, 500))
         screen.blit(square_surface1, (1100, 700))
 
@@ -403,14 +438,18 @@ while running:
         screen.fill((255, 255, 255))
         screen.blit(settings_image, (0, 0))
 
-    # Отображение введенного текста (новый блок)
+    # Отображение введенного текста
     if displayed_text:
         text_surface15 = font_text.render(displayed_text, True, (255, 0, 0))
         text_rect15 = text_surface15.get_rect()
         text_rect15.topleft = (10, 1350)  # Координаты для отображения текста
         screen.blit(text_surface15, text_rect15)
 
-    # Обновление экрана
+    # Вывод инпут бокса поверх всего остального
+    if show_input == 1:
+        group.draw(screen)
+
+    # Обновление экрана (ТОЛЬКО ОДИН РАЗ В КОНЦЕ ЦИКЛА)
     pygame.display.flip()
 
     # Ограничение до 60 FPS
