@@ -6,26 +6,29 @@ import time
 # Инициализация Pygame
 pygame.init()
 
-# Размеры экрана
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+# Размеры экрана (теперь FULLSCREEN)
+WIDTH, HEIGHT = pygame.display.Info().current_w, pygame.display.Info().current_h
+screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 pygame.display.set_caption("RPG Битва")
-
 
 font = pygame.font.Font(None, 45)
 
 WHITE = (255, 255, 255)
-
 BLACK = (0, 0, 0)
+LIGHT_GRAY = (200, 200, 200)
+DARK_GRAY = (150, 150, 150)
 
-
-
+# Переменные для обработки ввода и отображения текста
+update_text = False
+input_text = ""
+displayed_text = ""
+counter = 0  # Счетчик для смены цвета фона
 
 class TextInputBox(pygame.sprite.Sprite):
     def __init__(self, x, y, width, font):
         super().__init__()
         self.color = BLACK
-        self.backcolor = None
+        self.backcolor = None  # Цвет фона будет меняться
         self.pos = (x, y)
         self.width = width
         self.font = font
@@ -52,11 +55,11 @@ class TextInputBox(pygame.sprite.Sprite):
 
         height = len(lines) * self.font.get_height() + 10
         self.image = pygame.Surface((self.width, height), pygame.SRCALPHA)
-        self.image.fill(self.backcolor or (0, 0, 0, 0))
+        self.image.fill(self.backcolor or (0, 0, 0, 0))  # Прозрачный фон, если backcolor не задан
         for i, line in enumerate(lines):
             t_surf = self.font.render(line, True, self.color)
             self.image.blit(t_surf, (5, 5 + i * self.font.get_height()))
-        pygame.draw.rect(self.image, self.color if self.active else DARK_GRAY, self.image.get_rect().inflate(-2, -2), 2)
+        pygame.draw.rect(self.image, self.color if self.active else WHITE, self.image.get_rect().inflate(-2, -2), 2)
         if self.active and self.cursor_visible:
             cursor_y = 5 + (len(lines) - 1) * self.font.get_height()
             cursor_x = 5 + self.font.size(current_line)[0]
@@ -64,7 +67,7 @@ class TextInputBox(pygame.sprite.Sprite):
         self.rect = self.image.get_rect(topleft=self.pos)
 
     def update(self, events):
-        global update_text, input_text, displayed_text  # Declare variables as global
+        global update_text, input_text, displayed_text, counter
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.rect.collidepoint(event.pos):
@@ -73,12 +76,12 @@ class TextInputBox(pygame.sprite.Sprite):
                     self.active = False
             if event.type == pygame.KEYDOWN and self.active:
                 if event.key == pygame.K_RETURN:
-                    input_text = self.text  # Store the entered text
-                    displayed_text = input_text  # Update the displayed text
+                    input_text = self.text
+                    displayed_text = input_text
                     self.active = False
                     self.text = ""
                     self.render_text()
-                    update_text = True  # Set the flag to update text
+                    update_text = True
                 elif event.key == pygame.K_BACKSPACE:
                     self.text = self.text[:-1]
                     self.render_text()
@@ -98,9 +101,10 @@ class TextInputBox(pygame.sprite.Sprite):
                         self.render_text()
                         self.backspace_timer = current_time
 
+        counter += 1
         if update_text and self.active:
             self.render_text()
-            update_text = False  # Reset the flag here
+            update_text = False
 
         if counter % 2 == 0:
             self.backcolor = LIGHT_GRAY
@@ -114,11 +118,11 @@ class TextInputBox(pygame.sprite.Sprite):
             self.cursor_timer = current_time
             self.render_text()
 
-text_input_box = TextInputBox(1800, 1250, 400, font)  # Координаты внутри экрана
+text_input_box = TextInputBox(1500, 1350, 400, font)
 group = pygame.sprite.Group(text_input_box)
 
 
-# Основные цвета (RGB)
+# Основные цвета
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 RED = (255, 0, 0)
@@ -157,7 +161,7 @@ class Hero:
         self.original_hp = hp
         self.armor = armor
         self.money = money
-        self.dodge_chance = int(dodge_chance * 100)  # Преобразуем в проценты и округляем
+        self.dodge_chance = int(dodge_chance * 100)
         self.name = name
         self.level = 1
         self.exp = 0
@@ -186,7 +190,7 @@ class Hero:
 
             self.original_dmg = self.dmg
             self.original_hp = self.hp
-            self.dodge_chance += 1  # Увеличиваем шанс уворота на 1% за уровень
+            self.dodge_chance += 1
 
     def gain_experience_and_gold(self, exp_gain, gold_gain):
         self.exp += exp_gain
@@ -198,7 +202,7 @@ class Hero:
 
     def attack(self, enemy):
         body_part = random.choice(['head', 'body', 'leg', 'arm'])
-        crit_chance = 10 if self.name != "Плут" else 25  # У плута выше шанс крита в %
+        crit_chance = 10 if self.name != "Плут" else 25
         is_crit = random.randint(1, 100) <= crit_chance
 
         if body_part == 'head':
@@ -258,6 +262,7 @@ def battle(hero, enemy):
                         hero.gain_experience_and_gold(50, 15)
                         hero.restore_health()
                         running = False
+                        break
 
                     if random.randint(1, 100) > hero.dodge_chance:
                         damage, is_enemy_crit = enemy.attack(hero)
@@ -269,7 +274,11 @@ def battle(hero, enemy):
                     if hero.hp <= 0:
                         message = "Вы проиграли. Игра окончена!"
                         running = False
+                        break
 
+                    if enemy.hp <=0:
+                        message = 'Вы победили!'
+                        
 
 # --- Главная программа ---
 def main():
@@ -283,15 +292,45 @@ def main():
 
     while True:
         screen.fill(BACKGROUND_COLOR)
-        draw_text("Выберите класс: воин, маг, плут.", WIDTH // 2, HEIGHT // 2, WHITE, 48, center=True)
+        draw_text("Выберите класс: воин, маг, плут.", 400, 1350, WHITE, 48, center=True)
         group.draw(screen)
+        group.update(pygame.event.get())
         pygame.display.flip()
+
+        if displayed_text:
+            if displayed_text.lower() == "воин":
+                hero = Hero(20, 100, 5, 0, 0.05, "Воин")
+            elif displayed_text.lower() == "маг":
+                hero = Hero(30, 60, 2, 0, 0.02, "Маг")
+            elif displayed_text.lower() == "плут":
+                hero = Hero(25, 80, 3, 0, 0.10, "Плут")
+            else:  # Если введено что-то некорректное
+                continue  # Начинаем цикл заново
+
+            while True: # Цикл смены противников
+                if hero is not None:  # Проверка, был ли выбран герой
+                     battle(hero, enemies[enemy_index])
+
+                if hero.hp <=0:
+                    draw_text("Вы проиграли. Нажмите любую клавишу для выхода.", WIDTH//2, HEIGHT//2 + 100, RED, center = True)
+                    pygame.display.flip()
+                    waiting_for_key = True
+                    while waiting_for_key:
+                        for event in pygame.event.get():
+                            if event.type == pygame.KEYDOWN or event.type == pygame.QUIT:
+                                pygame.quit()
+                                sys.exit()
+
+                enemy_index = (enemy_index + 1) % len(enemies)
+
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-        pygame.time.wait(100)
 
+        clock.tick(FPS)
 
+if __name__ == "__main__":
+    main()
