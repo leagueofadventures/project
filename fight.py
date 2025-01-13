@@ -11,7 +11,7 @@ WIDTH, HEIGHT = pygame.display.Info().current_w, pygame.display.Info().current_h
 screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.FULLSCREEN)
 pygame.display.set_caption("RPG Битва")
 
-font = pygame.font.Font(None, 45)
+font = pygame.font.Font(None, 30) # Уменьшим шрифт для интерфейса, чтобы было меньше нагромождения
 
 # Цвета
 WHITE = (255, 255, 255)
@@ -25,7 +25,7 @@ DARK_GRAY = (150, 150, 150)
 # Переменные для обработки ввода
 update_text = False
 input_text = ""
-#displayed_text = "" #Удалить. Эта переменная объявлена в main()
+displayed_text = "" # Объявляем displayed_text на уровне модуля
 counter = 0
 text_output = []
 
@@ -82,7 +82,8 @@ class TextInputBox(pygame.sprite.Sprite):
             if event.type == pygame.KEYDOWN and self.active:
                 if event.key == pygame.K_RETURN:
                     input_text = self.text
-                    displayed_text = input_text  # displayed_text теперь локальная переменная
+                    global displayed_text # Ensure we are modifying the global displayed_text
+                    displayed_text = input_text
                     self.active = False
                     self.text = ""
                     self.render_text()
@@ -139,9 +140,9 @@ FPS = 60
 clock = pygame.time.Clock()
 
 # --- Функция для отрисовки текста ---
-def draw_text(text, x, y, color=TEXT_COLOR, size=36, center=False):
-    font = pygame.font.Font(None, size)
-    render = font.render(text, True, color)
+def draw_text(text, x, y, color=TEXT_COLOR, size=30, center=False): # Уменьшим размер шрифта здесь тоже
+    font_render = pygame.font.Font(None, size)
+    render = font_render.render(text, True, color)
     rect = render.get_rect()
     if center:
         rect.center = (x, y)
@@ -218,12 +219,12 @@ class Hero:
 
     def draw_health_bar(self, screen, x, y):
         bar_width = 100
-        bar_height = 10
+        bar_height = 8 # Уменьшим высоту хитбара
         fill = (self.hp / self.original_hp) * bar_width
         outline_rect = pygame.Rect(x, y, bar_width, bar_height)
         fill_rect = pygame.Rect(x, y, fill, bar_height)
         pygame.draw.rect(screen, GREEN, fill_rect)  # Зеленый цвет для героя
-        pygame.draw.rect(screen, WHITE, outline_rect, 2)
+        pygame.draw.rect(screen, WHITE, outline_rect, 1) # Уменьшим толщину обводки
 
 # --- Класс Врага ---
 class Enemy:
@@ -244,16 +245,16 @@ class Enemy:
 
     def draw_health_bar(self, screen, x, y):
         bar_width = 100
-        bar_height = 10
+        bar_height = 8 # Уменьшим высоту хитбара
         fill = (self.hp / self.max_hp) * bar_width
         outline_rect = pygame.Rect(x, y, bar_width, bar_height)
         fill_rect = pygame.Rect(x, y, fill, bar_height)
         pygame.draw.rect(screen, RED, fill_rect)
-        pygame.draw.rect(screen, WHITE, outline_rect, 2)
+        pygame.draw.rect(screen, WHITE, outline_rect, 1) # Уменьшим толщину обводки
 
 def add_text_output(text):
     text_output.append(text)
-    if len(text_output) > 5:  # Ограничиваем количество строк до 5
+    if len(text_output) > 7:  # Увеличим количество строк журнала боя
         text_output.pop(0)
 
 # --- Функция боя ---
@@ -263,45 +264,63 @@ def battle(hero, enemy):
     turn = 0
     text_output = []
 
+    add_text_output(f"Начинается битва против {enemy.name}!")
+
     while running:
+        print("Начало цикла battle()") # Debug print в начале цикла
+
         screen.fill(BACKGROUND_COLOR)
         #Индикатор хода
         if turn == 0:
-            draw_text("Ваш ход!", WIDTH - 200, 30, GREEN)
+            draw_text("Ваш ход! (Нажмите SPACE для атаки)", WIDTH - 300, 30, GREEN)
         else:
             draw_text("Ход врага!", WIDTH - 200, 30, RED)
 
-        draw_text(f"{hero.name}: HP {hero.hp}/{hero.original_hp} | Уровень: {hero.level} | Золото: {hero.money}", 10, 30, HERO_COLOR)
-        draw_text(f"Броня: {hero.armor} | Уворот: {hero.dodge_chance}%", 10, 60, HERO_COLOR)
-        hero.draw_health_bar(screen, 10, 80)
-        draw_text(f"Опыт: {hero.exp}/{hero.next_level_exp}", 10, 90, HERO_COLOR)
-        draw_text(f"{enemy.name}: HP {enemy.hp}", 10, 140, ENEMY_COLOR)
-        draw_text(f"Броня: {enemy.armor}", 10, 170, ENEMY_COLOR)
-        enemy.draw_health_bar(screen, 10, 200)
+        text_y_offset = 30
+        draw_text(f"{hero.name}: HP {hero.hp}/{hero.original_hp} | Уровень: {hero.level} | Золото: {hero.money}", 10, text_y_offset, HERO_COLOR)
+        text_y_offset += 25
+        draw_text(f"Броня: {hero.armor} | Уворот: {hero.dodge_chance}%", 10, text_y_offset, HERO_COLOR)
+        text_y_offset += 25
+        hero.draw_health_bar(screen, 10, text_y_offset)
+        text_y_offset += 15
+        draw_text(f"Опыт: {hero.exp}/{hero.next_level_exp}", 10, text_y_offset, HERO_COLOR)
+        text_y_offset += 40
+
+        draw_text(f"{enemy.name}: HP {enemy.hp}", 10, text_y_offset, ENEMY_COLOR)
+        text_y_offset += 25
+        draw_text(f"Броня: {enemy.armor}", 10, text_y_offset, ENEMY_COLOR)
+        text_y_offset += 25
+        enemy.draw_health_bar(screen, 10, text_y_offset)
 
         # Вывод журнала боя
-        y_offset = 230
+        y_offset = text_y_offset + 50
+        draw_text("Журнал боя:", 10, y_offset - 30, WHITE, size=24)
         for line in text_output:
-            draw_text(line, 10, y_offset, WHITE)
-            y_offset += 30
+            draw_text(line, 10, y_offset, WHITE, size=24)
+            y_offset += 20
 
+        print("Перед event loop") # Debug print перед циклом обработки событий
         for event in pygame.event.get():
+            print("Обработка события:", event.type) # Debug print внутри цикла событий
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            if event.type == pygame.KEYDOWN:  # Добавлена проверка на K_ESCAPE
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     sys.exit()
 
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_SPACE and turn == 0: # Добавлено and turn == 0
-                if turn == 0:  # Ход игрока
-                    damage, part, is_crit = hero.attack(enemy)
-                    enemy.hp -= damage
-                    enemy.hp = max(0, enemy.hp)
-                    crit_text = " (КРИТ!)" if is_crit else ""
-                    add_text_output(f"{hero.name} ударил {enemy.name} по {part} на {damage} урона{crit_text}!")
-                    turn = 1  # Переход хода к врагу
+                if event.key == pygame.K_SPACE:
+                    print("Обнаружен SPACE") # Debug print при нажатии SPACE
+                    if turn == 0:
+                        print("Ход игрока") # Debug print если ход игрока
+                        damage, part, is_crit = hero.attack(enemy)
+                        enemy.hp -= damage
+                        enemy.hp = max(0, enemy.hp)
+                        crit_text = " (КРИТ!)" if is_crit else ""
+                        add_text_output(f"{hero.name} ударил {enemy.name} по {part} на {damage} урона{crit_text}!")
+                        turn = 1
+                        print("Ход передан врагу") # Debug print после хода игрока
 
                 if enemy.hp <= 0:
                     add_text_output(f"{enemy.name} повержен!")
@@ -310,8 +329,10 @@ def battle(hero, enemy):
                     pygame.display.flip()
                     pygame.time.wait(2000)
                     return True
+        print("После event loop") # Debug print после цикла обработки событий
 
-        if turn == 1 and enemy.hp > 0:  # Ход врага
+        if turn == 1 and enemy.hp > 0:
+            print("Ход врага") # Debug print перед ходом врага
             if random.randint(1, 100) > hero.dodge_chance:
                 damage, is_enemy_crit = enemy.attack(hero)
                 hero.hp -= damage
@@ -320,7 +341,8 @@ def battle(hero, enemy):
                 add_text_output(f"{enemy.name} нанес {hero.name} {damage} урона{crit_text}!")
             else:
                 add_text_output(f"{hero.name} увернулся от атаки {enemy.name}!")
-            turn = 0  # Переход хода к игроку
+            turn = 0
+            print("Ход передан игроку") # Debug print после хода врага
 
         if hero.hp <= 0:
             return False
@@ -328,8 +350,9 @@ def battle(hero, enemy):
         pygame.display.flip()
         if turn == 1:
             pygame.time.wait(1000)
-
+            
 def main():
+    global displayed_text # Declare that we are using the global displayed_text
     hero = None
     enemies = [
         Enemy(13, 45, 4, 2, "Бандит", crit_chance=5),
@@ -338,7 +361,6 @@ def main():
     ]
     enemy_index = 0
     game_state = "class_selection"
-    displayed_text = ""  # Инициализация displayed_text
 
     while True:
         events = pygame.event.get()
@@ -362,10 +384,12 @@ def main():
                 if hero:
                     game_state = "battle"
                     displayed_text = "" # Важно очистить displayed_text
+                    print("Game state changed to battle") # Debug print
                 else:
                     add_text_output("Некорректный выбор. Попробуйте снова.")
 
         elif game_state == "battle":
+            print("Battle function called") # Debug print to confirm battle starts
             if not battle(hero, enemies[enemy_index]):
                 draw_text("Вы проиграли. Нажмите любую клавишу для выхода.", WIDTH // 2, HEIGHT // 2 + 100, RED, center=True)
                 pygame.display.flip()
