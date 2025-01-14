@@ -1,1 +1,1 @@
-https://garticphone.com/ru/lobby
+fxrfcjd uj yf ds[jlys[ d vfqy
