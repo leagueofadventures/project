@@ -4,6 +4,14 @@ import sys
 import time
 from moviepy.editor import VideoFileClip
 
+
+pygame.init()
+pygame.mixer.init()
+
+# Установите разрешение экрана по необходимости. Здесь используется полный экран.
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+screen_width, screen_height = screen.get_size()
+
 # Define colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -114,13 +122,7 @@ class TextInputBox(pygame.sprite.Sprite):
             self.cursor_timer = current_time
             self.render_text()
 
-# Инициализация Pygame
-pygame.init()
-pygame.mixer.init()
 
-# Установите разрешение экрана по необходимости. Здесь используется полный экран.
-screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-screen_width, screen_height = screen.get_size()
 
 # Параметры текста в инпут
 font = pygame.font.SysFont(None, 32)  # Размер шрифта уменьшен для примера
@@ -136,9 +138,7 @@ try:
     
     menu_image = pygame.image.load('menu.jpg')
     
-    second_image = pygame.image.load('2.png')
-
-    #Загрузка музыки
+    second_image = pygame.image.load('2.png') 
     
     pygame.mixer.music.load('12.mp3')
     
@@ -153,6 +153,23 @@ try:
     fourth_image = pygame.image.load('4.png')
 
     fourth_image_blur = pygame.image.load('4.blur.png')
+
+    fifth_image = pygame.image.load('5.jpg')
+
+    fifth_image_blur = pygame.image.load('5.blur.jpg')
+
+    sixth_image = pygame.image.load('6.jpg')
+
+    sixth_image_blur = pygame.image.load('6.blur.jpg')
+
+    seventh_image = pygame.image.load('7.jpg')
+
+    seventh_image_blur = pygame.image.load('7.blur.png')
+
+
+    eighth_image = pygame.image.load('8.jpg')
+
+    eighth_image_blur = pygame.image.load('8.blur.png')
     
 except pygame.error:
     image = None
@@ -173,7 +190,6 @@ menu_image_rect = menu_image.get_rect()
 image_blur_rect = image_blur.get_rect()
 second_image_blur_rect = second_image_blur.get_rect()
 
-# Передний план центрируется (если необходимо, можно добавить код центрирования)
 
 # Параметры текста
 font_text = pygame.font.Font(None, 50)
@@ -212,6 +228,10 @@ text_surface3 = font_text.render('Они могли помогать нежит�
 text_rect3 = text_surface3.get_rect()
 text_rect3.topleft = (10, 1350)  # Пример координат
 
+text_surface4 = font_text.render('В ней поселились очень добрые жители и они делились между собой чем угодно. Но их деревня была в зоне королевства.', True, BLACK)
+text_rect4 = text_surface3.get_rect()
+text_rect4.topleft = (10, 1350)  # Пример координат
+
 text_surface_pause = font_text1.render('Продолжить - 5', True, BLACK)
 text_rect_pause = text_surface_pause.get_rect()
 text_rect_pause.topleft = (1170, 550)  # Пример координат
@@ -227,6 +247,33 @@ text_rect4.topleft = (10, 1300)  # Пример координат
 text_surface5 = font_text.render('Среди этих построек и зародилась одна особенная деревня.', True, BLACK)
 text_rect5 = text_surface5.get_rect()
 text_rect5.topleft = (10, 1350)  # Пример координат
+
+
+text_surface6 = font_text.render('В ней поселились очень добрые жители и они делились между собой чем угодно.', True, BLACK)
+text_rect6 = text_surface6.get_rect()
+text_rect6.topleft = (10, 1310)  # Пример координат
+
+
+text_surface7 = font_text.render('В этой деревне было много вкусной еды.', True, BLACK)
+text_rect7 = text_surface7.get_rect()
+text_rect7.topleft = (10, 1310)  # Пример координат
+
+
+text_surface8 = font_text.render('Среди этих построек и зародилась одна особенная деревня.', True, BLACK)
+text_rect8 = text_surface8.get_rect()
+text_rect8.topleft = (10, 1310)  # Пример координат
+
+
+text_surface9 = font_text.render('Но их деревня была в зоне королевства.', True, BLACK)
+text_rect9 = text_surface9.get_rect()
+text_rect9.topleft = (10, 1310)  # Пример координат
+
+
+text_surface10 = font_text.render('Это дало повод королю отнять у ник большую часть продовольствия. Ведь король очень любил брать чужое счастье себе.', True, BLACK)
+text_rect10 = text_surface10.get_rect()
+text_rect10.topleft = (10, 1310)  # Пример координат
+
+
 
 # Установка прозрачности (alpha). 128 — это значение для полупрозрачности (50%).
 alpha = 128
@@ -267,6 +314,8 @@ blur2 = 0
 
 blur3 = 0
 
+image_flag = 0
+
 # Основной цикл
 screen.fill(WHITE)
 while running:
@@ -276,7 +325,7 @@ while running:
             running = False
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE:
+            if event.key == pygame.K_SPACE and image_flag == 1:
                 if show_game_settings == 1:
                     pass
                 if show_game_settings == 0:
@@ -335,6 +384,26 @@ while running:
                     show_image = 3
                     show_firstimage = 0
 
+                elif show_image == 4:
+                    show_game_settings = 0
+                    show_image = 4
+                    show_firstimage = 0
+
+                elif show_image == 5:
+                    show_game_settings = 0
+                    show_image = 5
+                    show_firstimage = 0
+
+                elif show_image == 6:
+                    show_game_settings = 0
+                    show_image = 6
+                    show_firstimage = 0
+
+                elif show_image == 7:
+                    show_game_settings = 0
+                    show_image = 7
+                    show_firstimage = 0
+
     # Обновление всех спрайтов
     group.update(event_list)
 
@@ -381,6 +450,43 @@ while running:
             screen.blit(text_surface_pause, text_rect_pause)
             screen.blit(text_surface_pause_settings, text_rect_pause_settings)
 
+        elif show_image == 4:
+            show_firstimage = 0
+            screen.fill(WHITE)
+            screen.blit(fifth_image_blur, (0, 0))
+            screen.blit(square_surface2, (1100, 500))
+            screen.blit(square_surface3, (1100, 500))
+            screen.blit(text_surface_pause, text_rect_pause)
+            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
+
+        elif show_image == 5:
+            show_firstimage = 0
+            screen.fill(WHITE)
+            screen.blit(sixth_image_blur, (0, 0))
+            screen.blit(square_surface2, (1100, 500))
+            screen.blit(square_surface3, (1100, 500))
+            screen.blit(text_surface_pause, text_rect_pause)
+            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
+
+        elif show_image == 6:
+            show_firstimage = 0
+            screen.fill(WHITE)
+            screen.blit(seventh_image_blur, (0, 0))
+            screen.blit(square_surface2, (1100, 500))
+            screen.blit(square_surface3, (1100, 500))
+            screen.blit(text_surface_pause, text_rect_pause)
+            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
+
+
+        elif show_image == 7:
+            show_firstimage = 0
+            screen.fill(WHITE)
+            screen.blit(eighth_image_blur, (0, 0))
+            screen.blit(square_surface2, (1100, 500))
+            screen.blit(square_surface3, (1100, 500))
+            screen.blit(text_surface_pause, text_rect_pause)
+            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
+
 
     elif show_image == 1:
         show_firstimage = 0
@@ -402,6 +508,31 @@ while running:
         screen.blit(text_surface4, text_rect4)
         screen.blit(text_surface5, text_rect5)
 
+    elif show_image == 4:
+        show_firstimage = 0
+        screen.fill(WHITE)
+        screen.blit(fifth_image, (0, 0))
+        screen.blit(text_surface6, text_rect6)
+
+    elif show_image == 5:
+        show_firstimage = 0
+        screen.fill(WHITE)
+        screen.blit(sixth_image, (0, 0))
+        screen.blit(text_surface7, text_rect7)
+
+    elif show_image == 6:
+        show_firstimage = 0
+        screen.fill(WHITE)
+        screen.blit(seventh_image, (0, 0))
+        screen.blit(text_surface9, text_rect9)
+
+    elif show_image == 7:
+        show_firstimage = 0
+        screen.fill(WHITE)
+        screen.blit(eighth_image, (0, 0))
+        screen.blit(text_surface10, text_rect10)
+        
+
     
 
     # Вывод первого изображения 
@@ -409,6 +540,7 @@ while running:
         screen.fill(WHITE)
         screen.blit(image, (0, 0))
         screen.blit(text_surface1, text_rect1)
+        image_flag = 1
 
     elif show_settings == 2:
         show_settings = 0
