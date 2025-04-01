@@ -157,7 +157,6 @@ resize('8.blur.png')
 resize('9.jpg')
 resize('10.jpg')
 resize('11.jpg')
-resize('готовятся к бою.jpg')
 print(Style.RESET_ALL)
 
 void = fight2.Hero(10, 10, 10, 10, 10, 'gg')
@@ -188,27 +187,27 @@ try:
 
     fourth_image_blur = pygame.image.load('4.blur.png')
 
-    fifth_image = pygame.image.load('5.jpg')
+    fifth_image = pygame.image.load('5.png')
 
     fifth_image_blur = pygame.image.load('5.blur.jpg')
 
-    sixth_image = pygame.image.load('6.jpg')
+    sixth_image = pygame.image.load('6.png')
 
     sixth_image_blur = pygame.image.load('6.blur.jpg')
 
-    seventh_image = pygame.image.load('7.jpg')
+    seventh_image = pygame.image.load('7.png')
 
     seventh_image_blur = pygame.image.load('7.blur.png')
 
-    eighth_image = pygame.image.load('8.jpg')
+    eighth_image = pygame.image.load('8.png')
 
     eighth_image_blur = pygame.image.load('8.blur.png')
 
-    ninth_image = pygame.image.load('9.jpg')
+    ninth_image = pygame.image.load('9.png')
 
-    tenth_image = pygame.image.load('10.jpg')
+    tenth_image = pygame.image.load('10.png')
 
-    eleventh_image = pygame.image.load('11.jpg')
+    eleventh_image = pygame.image.load('11.png')
 
 
     
@@ -262,18 +261,6 @@ text_rect_menu_settings_2.topleft = (1230, 790)  # Пример координа
 
 
 
-text_surface2 = font_text.render('В ней появились разные существа. Одни были злые другие добрые а некоторые вообще не относились ни к первым ни к другим.', True, BLACK)
-text_rect2 = text_surface2.get_rect()
-text_rect2.topleft = (10, 1300)  # Пример координат
-
-text_surface3 = font_text.render('Они могли помогать нежити и уничтожать добрых. Но и наоборот.', True, BLACK)
-text_rect3 = text_surface3.get_rect()
-text_rect3.topleft = (10, 1350)  # Пример координат
-
-text_surface4 = font_text.render('В ней поселились очень добрые жители и они делились между собой чем угодно. Но их деревня была в зоне королевства.', True, BLACK)
-text_rect4 = text_surface3.get_rect()
-text_rect4.topleft = (10, 1350)  # Пример координат
-
 text_surface_pause = font_text1.render('Продолжить - 5', True, BLACK)
 text_rect_pause = text_surface_pause.get_rect()
 text_rect_pause.topleft = (1170, 550)  # Пример координат
@@ -281,58 +268,6 @@ text_rect_pause.topleft = (1170, 550)  # Пример координат
 text_surface_pause_settings = font_text1.render('настройки - 4', True, BLACK, WHITE)
 text_rect_pause_settings = text_surface_pause_settings.get_rect()
 text_rect_pause_settings.topleft = (1170, 750)  # Пример координат
-
-text_surface4 = font_text.render('В этом мире зародилась цивилизация и в некоторых местах появились некие постройки.', True, BLACK)
-text_rect4 = text_surface4.get_rect()
-text_rect4.topleft = (10, 1300)  # Пример координат
-
-text_surface5 = font_text.render('Среди этих построек и зародилась одна особенная деревня.', True, BLACK)
-text_rect5 = text_surface5.get_rect()
-text_rect5.topleft = (10, 1350)  # Пример координат
-
-
-text_surface6 = font_text.render('В ней поселились очень добрые жители и они делились между собой чем угодно.', True, BLACK)
-text_rect6 = text_surface6.get_rect()
-text_rect6.topleft = (10, 1310)  # Пример координат
-
-
-text_surface7 = font_text.render('В этой деревне было много вкусной еды.', True, BLACK)
-text_rect7 = text_surface7.get_rect()
-text_rect7.topleft = (10, 1310)  # Пример координат
-
-
-text_surface8 = font_text.render('Среди этих построек и зародилась одна особенная деревня.', True, BLACK)
-text_rect8 = text_surface8.get_rect()
-text_rect8.topleft = (10, 1310)  # Пример координат
-
-
-text_surface9 = font_text.render('Но их деревня была в зоне королевства.', True, BLACK)
-text_rect9 = text_surface9.get_rect()
-text_rect9.topleft = (10, 1310)  # Пример координат
-
-
-text_surface10 = font_text.render('Это дало повод королю отнять у ник большую часть продовольствия. Ведь король очень любил брать чужое счастье себе.', True, BLACK)
-text_rect10 = text_surface10.get_rect()
-text_rect10.topleft = (10, 1310)  # Пример координат
-
-
-text_surface11 = font_text.render('Они отправились к Королю спросить почему он так с ними поступил. Но в итоге нечего не получилось хоть они и пытались всеми силами.', True, BLACK)
-text_rect11 = text_surface11.get_rect()
-text_rect11.topleft = (10, 1310)  # Пример координат
-
-
-text_surface12 = font_text.render('Но в деревне появился отважный житель который захотел постоять за свою деревню.', True, BLACK)
-text_rect12 = text_surface12.get_rect()
-text_rect12.topleft = (10, 1310)  # Пример координат
-
-
-text_surface13 = font_text.render('Через некоторое время пошли слухи что в ихней деревне Появился воин у которого есть сила немереная. Постепенно он стал обучался в воинском деле.', True, BLACK)
-text_rect13 = text_surface13.get_rect()
-text_rect13.topleft = (10, 1310)  # Пример координат
-
-text_surface14 = font_text.render(' Но в деревню ворвалась команда воинов скелетов, потому что до них дошли сплетни что тут есть воин который возможно очень сильный и на нём можно заработать очень много денег. ', True, BLACK)
-text_rect14 = text_surface14.get_rect()
-text_rect14.topleft = (10, 1310)  # Пример координат
 
 
 
@@ -554,75 +489,61 @@ while running:
     elif show_image == 1:
         show_firstimage = 0
         screen.fill(WHITE)
-        screen.blit(text_surface2, text_rect2)
-        screen.blit(text_surface3, text_rect3)
         screen.blit(second_image, (0, 0))
 
     elif show_image == 2:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(third_image, (0, 0))
-        screen.blit(text_surface3, text_rect3)
 
     elif show_image == 3:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(fourth_image, (0, 0))
-        screen.blit(text_surface4, text_rect4)
-        screen.blit(text_surface5, text_rect5)
 
     elif show_image == 4:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(fifth_image, (0, 0))
-        screen.blit(text_surface6, text_rect6)
 
     elif show_image == 5:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(sixth_image, (0, 0))
-        screen.blit(text_surface7, text_rect7)
 
     elif show_image == 6:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(seventh_image, (0, 0))
-        screen.blit(text_surface9, text_rect9)
 
     elif show_image == 7:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(eighth_image, (0, 0))
-        screen.blit(text_surface10, text_rect10)
 
     elif show_image == 8:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(ninth_image, (0, 0))
-        screen.blit(text_surface11, text_rect11)
 
     elif show_image == 9:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(tenth_image, (0, 0))
-        screen.blit(text_surface12, text_rect12)
 
     elif show_image == 10:
         show_firstimage = 0
         screen.fill(WHITE)
         screen.blit(tenth_image, (0, 0))
-        screen.blit(text_surface13, text_rect13)
 
     elif show_image == 11:
         show_firstimage = 0
         screen.fill(WHITE)
-        screen.blit(text_surface14, text_rect14)
         screen.blit(eleventh_image, (0, 0))
 
     elif show_image == 11:
         show_firstimage = 0
         screen.fill(WHITE)
-        screen.blit(text_surface14, text_rect14)
         screen.blit(eleventh_image, (0, 0))
 
     elif show_image == 12:
@@ -640,7 +561,6 @@ while running:
     elif show_firstimage:
         screen.fill(WHITE)
         screen.blit(image, (0, 0))
-        screen.blit(text_surface1, text_rect1)
         image_flag = 1
 
     elif show_settings == 2:
