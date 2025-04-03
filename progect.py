@@ -1,20 +1,17 @@
 import os
 import pygame
-from pygame.locals import *
 import sys
 import time
 from moviepy import VideoFileClip
 from colorama import init, Fore, Style
-
+from resize import resize
 import fight2
-from resize import *
 
-
-
+# Initialize Pygame
 pygame.init()
 pygame.mixer.init()
 
-# Установите разрешение экрана по необходимости. Здесь используется полный экран.
+# Set up screen
 screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
 screen_width, screen_height = screen.get_size()
 
@@ -24,7 +21,29 @@ BLACK = (0, 0, 0)
 LIGHT_GRAY = (210, 210, 210)
 DARK_GRAY = (169, 169, 169)
 
-# Global variables to store input text and update flag
+# Global variables
+input_text = ""
+displayed_text = ""
+viewed_images = []  # List to store viewed images
+viewed_images_file = "viewed_images.txt"  # File to save viewed images
+
+# Load viewed images from file
+def load_viewed_images():
+    if os.path.exists(viewed_images_file):
+        with open(viewed_images_file, 'r') as f:
+            return [line.strip() for line in f.readlines()]
+    return []
+
+# Save viewed images to file
+def save_viewed_images():
+    with open(viewed_images_file, 'w') as f:
+        for image_path in viewed_images:
+            f.write(image_path + '\n')
+
+# Load viewed images at the start
+viewed_images = load_viewed_images()
+
+# Your existing code...
 input_text = ""
 displayed_text = ""  # Variable to store text to be displayed on the screen
 
@@ -116,18 +135,15 @@ class TextInputBox(pygame.sprite.Sprite):
             self.render_text()
             update_text = False  # Reset the flag here
 
-        if counter % 2 == 0:
-            self.backcolor = LIGHT_GRAY
-        else:
-            self.backcolor = DARK_GRAY
-        self.render_text()
+        if counter % 20 == 0:  # Changed update frequency for better visual
+            self.backcolor = LIGHT_GRAY if counter % 40 == 0 else DARK_GRAY
+            self.render_text()
 
         current_time = pygame.time.get_ticks()
         if current_time - self.cursor_timer > 500:
             self.cursor_visible = not self.cursor_visible
             self.cursor_timer = current_time
             self.render_text()
-
 
 
 # Параметры текста в инпут
@@ -164,73 +180,35 @@ void = fight2.Hero(10, 10, 10, 10, 10, 'gg')
 enemy = fight2.Enemy(10, 10, 10, 10, 'gg')
 
 # Загрузка изображений и аудио
-try:
-    image = pygame.image.load("1.png")
-    
-    settings_image = pygame.image.load('Settings.png')  # Исправлена лишняя скобка
+images = ['1.png', '2.png', '3.png', '4.png', '5.jpg', '6.jpg', '7.jpg', '8.jpg', '9.jpg', '10.jpg', '11.png']
+image_surfaces = {}
 
-    menu_image = pygame.image.load('menu.jpg')
-    
-    second_image = pygame.image.load('2.png')
+for image in images:
+    try:
+        image_surfaces[image] = pygame.image.load(image).convert()
+    except pygame.error as e:
+        print(f"Не удалось загрузить изображение {image}: {e}")
+
+try:
+    settings_image = pygame.image.load('Settings.png').convert()  # Исправлена лишняя скобка and added .convert()
+
+    menu_image = pygame.image.load('menu.jpg').convert()
     
     pygame.mixer.music.load('12.mp3')
     
-    image_blur = pygame.image.load('1.blur.png')
-    
-    third_image = pygame.image.load('3.png')
-    
-    third_image_blur = pygame.image.load('3.blur.png')
-    
-    second_image_blur = pygame.image.load('2.blur.png')
-    
-    fourth_image = pygame.image.load('4.png')
-
-    fourth_image_blur = pygame.image.load('4.blur.png')
-
-    fifth_image = pygame.image.load('5.png')
-
-    fifth_image_blur = pygame.image.load('5.blur.jpg')
-
-    sixth_image = pygame.image.load('6.png')
-
-    sixth_image_blur = pygame.image.load('6.blur.jpg')
-
-    seventh_image = pygame.image.load('7.png')
-
-    seventh_image_blur = pygame.image.load('7.blur.png')
-
-    eighth_image = pygame.image.load('8.png')
-
-    eighth_image_blur = pygame.image.load('8.blur.png')
-
-    ninth_image = pygame.image.load('9.png')
-
-    tenth_image = pygame.image.load('10.png')
-
-    eleventh_image = pygame.image.load('11.png')
-
-
-    
-    
-except pygame.error:
+except pygame.error as e:
     image = None
-    print("Не удалось загрузить одно из изображений.")
+    print(f"Не удалось загрузить одно из изображений: {e}")
 
 # Загрузка видеофайла
-clip = VideoFileClip('video.mp4')
-video_width, video_height = clip.size
-duration = clip.duration
-
-# Получение rect для изображений
-settings_image_rect = settings_image.get_rect()
-third_image_blur_rect = third_image_blur.get_rect()
-third_image_rect = third_image.get_rect()
-image_rect = image.get_rect()
-second_image_rect = second_image.get_rect()
-menu_image_rect = menu_image.get_rect()
-image_blur_rect = image_blur.get_rect()
-second_image_blur_rect = second_image_blur.get_rect()
-
+try:
+    clip = VideoFileClip('video.mp4')
+    video_width, video_height = clip.size
+    duration = clip.duration
+    current_frame_time = 0
+except IOError as e:
+    clip = None
+    print(f"Не удалось загрузить видеофайл: {e}")
 
 # Параметры текста
 font_text = pygame.font.Font(None, 50)
@@ -249,25 +227,30 @@ text_rect1.topleft = (10, 1300)  # Пример координат
 
 text_surface_menu_play = font_text1.render('Чтобы играть, нажмите 1', True, BLACK, WHITE)
 text_rect_menu_play = text_surface_menu_play.get_rect()
-text_rect_menu_play.topleft = (1150, 550)  # Пример координат
+text_rect_menu_play.centerx = screen_width // 2
+text_rect_menu_play.centery = screen_height // 2 - 50
 
 text_surface_menu_settings = font_text1.render('Чтобы зайти в настройки,', True, BLACK, WHITE)
 text_rect_menu_settings = text_surface_menu_settings.get_rect()
-text_rect_menu_settings.topleft = (1150, 750)  # Пример координат
+text_rect_menu_settings.centerx = screen_width // 2
+text_rect_menu_settings.centery = screen_height // 2 + 50
 
 text_surface_menu_settings_2 = font_text1.render('нажмите 2', True, BLACK, WHITE)
 text_rect_menu_settings_2 = text_surface_menu_settings_2.get_rect()
-text_rect_menu_settings_2.topleft = (1230, 790)  # Пример координат
+text_rect_menu_settings_2.centerx = screen_width // 2
+text_rect_menu_settings_2.centery = screen_height // 2 + 90
 
 
 
 text_surface_pause = font_text1.render('Продолжить - 5', True, BLACK)
 text_rect_pause = text_surface_pause.get_rect()
-text_rect_pause.topleft = (1170, 550)  # Пример координат
+text_rect_pause.centerx = screen_width // 2
+text_rect_pause.centery = screen_height // 2 - 50
 
 text_surface_pause_settings = font_text1.render('настройки - 4', True, BLACK, WHITE)
 text_rect_pause_settings = text_surface_pause_settings.get_rect()
-text_rect_pause_settings.topleft = (1170, 750)  # Пример координат
+text_rect_pause_settings.centerx = screen_width // 2
+text_rect_pause_settings.centery = screen_height // 2 + 50
 
 
 
@@ -289,10 +272,16 @@ square_surface2.fill((255, 255, 255, alpha))
 square_surface3.fill((255, 255, 255, alpha))
 
 def make_frame(t):
-    frame = clip.get_frame(t)
-    # Преобразование кадра видео в изображение Pygame
-    surf = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
-    return surf
+    if clip:
+        try:
+            frame = clip.get_frame(t)
+            # Преобразование кадра видео в изображение Pygame
+            surf = pygame.surfarray.make_surface(frame.swapaxes(0, 1))
+            return surf
+        except Exception as e:
+            print(f"Error getting video frame at time {t}: {e}")
+            return None
+    return None
 
 # Инициализация флагов и переменных
 running = True
@@ -305,6 +294,7 @@ show_firstimage = 0
 music = 0
 show_image = 0
 show_game_settings = 0
+paused = False
 
 blur1 = 0
 
@@ -313,301 +303,113 @@ blur2 = 0
 blur3 = 0
 
 image_flag = 0
+pygame.mixer.music.play(-1) # Play music indefinitely
 
-# Основной цикл
-screen.fill(WHITE)
+# Find the last viewed image index
+if viewed_images:
+    last_viewed_image = viewed_images[-1]
+    current_image = images.index(last_viewed_image)
+else:
+    current_image = 0
+
+# In the main loop, when displaying an image, add it to the viewed_images list
 while running:
-    event_list = pygame.event.get()
-    for event in event_list:
-        if event.type == QUIT:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
             running = False
-
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_SPACE and image_flag == 1:
-                if show_game_settings == 1:
-                    pass
-                if show_game_settings == 0:
-                    show_firstimage = 0
-                    show_image += 1
+            if show_menu:
+                if event.key == pygame.K_1:
                     show_menu = 0
-
-            elif event.key == pygame.K_1:
-                show_video = 1
-                show_menu = 0
-
-            elif event.key == pygame.K_2:
-                show_settings = 1
-                if show_menu == 0:
-                    show_settings = 2
-                    show_menu = 1
-
-            elif event.key == pygame.K_4 and show_game_settings == 1:
-                show_game_settings = 2
-
-            elif event.key == pygame.K_3:
-                music += 1
-                pygame.mixer.music.play()
-                if music in [2, 4, 6, 8, 10, 12, 14, 16]:
-                    pygame.mixer.music.stop()
-
-            elif event.key == pygame.K_ESCAPE and (show_firstimage == 1 or show_image >= 1):
-                show_game_settings = 1
-                show_video = 0
-
-
-            elif event.key == pygame.K_t:
-                show_input = 1
-
-            elif event.key == pygame.K_RETURN:
-                show_input = 0
-
-            elif event.key == pygame.K_5:
-                if show_firstimage == 1:
-                    show_game_settings = 0
                     show_firstimage = 1
-                    show_image = 0
-                    
-                elif show_image == 1:
-                    show_game_settings = 0
+                if event.key == pygame.K_2:
+                    show_menu = 0
+                    show_settings = 1
+            elif show_settings:
+                if event.key == pygame.K_ESCAPE:
+                    show_settings = 0
+                    show_firstimage = 1
+            elif show_firstimage:
+                if event.key == pygame.K_ESCAPE:
+                    show_firstimage = 0
+                    show_menu = 1
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_SPACE:
+                    show_firstimage = 0
                     show_image = 1
-                    show_firstimage = 0
+                    if images[current_image] not in viewed_images:
+                        viewed_images.append(images[current_image])  # Add to viewed images
+                        save_viewed_images()  # Save viewed images to file
+            elif show_image:
+                if event.key == pygame.K_ESCAPE:
+                    show_image = 0
+                    show_firstimage = 1
+                if event.key == pygame.K_RIGHT or event.key == pygame.K_SPACE:
+                    current_image += 1
+                    if current_image >= len(images):
+                        current_image = 0
+                    if images[current_image] not in viewed_images:
+                        viewed_images.append(images[current_image])  # Add to viewed images
+                        save_viewed_images()  # Save viewed images to file
+            elif show_video:
+                if event.key == pygame.K_SPACE:
+                    paused = not paused
+                if event.key == pygame.K_ESCAPE:
+                    show_video = 0
+                    show_menu = 1
+        group.update([event])
 
-                elif show_image == 2:
-                    show_game_settings = 0
-                    show_image = 2
-                    show_firstimage = 0
+    screen.fill(BLACK) # Fill the screen with black each frame
 
-                elif show_image == 3:
-                    show_game_settings = 0
-                    show_image = 3
-                    show_firstimage = 0
-
-                elif show_image == 4:
-                    show_game_settings = 0
-                    show_image = 4
-                    show_firstimage = 0
-
-                elif show_image == 5:
-                    show_game_settings = 0
-                    show_image = 5
-                    show_firstimage = 0
-
-                elif show_image == 6:
-                    show_game_settings = 0
-                    show_image = 6
-                    show_firstimage = 0
-
-                elif show_image == 7:
-                    show_game_settings = 0
-                    show_image = 7
-                    show_firstimage = 0
-
-    # Обновление всех спрайтов
-    group.update(event_list)
-
-    # Логика выбора отображаемых элементов
-    if show_game_settings == 2:
-        screen.fill(WHITE)
-        screen.blit(settings_image, (0, 0))
-
-    elif show_game_settings == 1:
-        if show_firstimage == 1:
-            screen.fill(WHITE)
-            screen.blit(image_blur, (0, 0))
-            screen.blit(square_surface2, (1100, 500))
-            screen.blit(square_surface3, (1100, 700))
-            screen.blit(text_surface_pause, text_rect_pause)
-            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
-       
-
-        elif show_image == 1:
-            show_firstimage = 0
-            screen.fill(WHITE)
-            screen.blit(second_image_blur, (0, 0))
-            screen.blit(square_surface2, (1100, 500))
-            screen.blit(square_surface3, (1100, 700))
-            screen.blit(text_surface_pause, text_rect_pause)
-            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
-       
-
-        elif show_image == 2:
-            show_firstimage = 0
-            screen.fill(WHITE)
-            screen.blit(third_image_blur, (0, 0))
-            screen.blit(square_surface2, (1100, 500))
-            screen.blit(square_surface3, (1100, 700))
-            screen.blit(text_surface_pause, text_rect_pause)
-            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
-
-        elif show_image == 3:
-            show_firstimage = 0
-            screen.fill(WHITE)
-            screen.blit(fourth_image_blur, (0, 0))
-            screen.blit(square_surface2, (1100, 500))
-            screen.blit(square_surface3, (1100, 700))
-            screen.blit(text_surface_pause, text_rect_pause)
-            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
-
-        elif show_image == 4:
-            show_firstimage = 0
-            screen.fill(WHITE)
-            screen.blit(fifth_image_blur, (0, 0))
-            screen.blit(square_surface2, (1100, 500))
-            screen.blit(square_surface3, (1100, 500))
-            screen.blit(text_surface_pause, text_rect_pause)
-            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
-
-        elif show_image == 5:
-            show_firstimage = 0
-            screen.fill(WHITE)
-            screen.blit(sixth_image_blur, (0, 0))
-            screen.blit(square_surface2, (1100, 500))
-            screen.blit(square_surface3, (1100, 500))
-            screen.blit(text_surface_pause, text_rect_pause)
-            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
-
-        elif show_image == 6:
-            show_firstimage = 0
-            screen.fill(WHITE)
-            screen.blit(seventh_image_blur, (0, 0))
-            screen.blit(square_surface2, (1100, 500))
-            screen.blit(square_surface3, (1100, 500))
-            screen.blit(text_surface_pause, text_rect_pause)
-            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
-
-
-        elif show_image == 7:
-            show_firstimage = 0
-            screen.fill(WHITE)
-            screen.blit(eighth_image_blur, (0, 0))
-            screen.blit(square_surface2, (1100, 500))
-            screen.blit(square_surface3, (1100, 500))
-            screen.blit(text_surface_pause, text_rect_pause)
-            screen.blit(text_surface_pause_settings, text_rect_pause_settings)
-
-
-    elif show_image == 1:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(second_image, (0, 0))
-
-    elif show_image == 2:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(third_image, (0, 0))
-
-    elif show_image == 3:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(fourth_image, (0, 0))
-
-    elif show_image == 4:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(fifth_image, (0, 0))
-
-    elif show_image == 5:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(sixth_image, (0, 0))
-
-    elif show_image == 6:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(seventh_image, (0, 0))
-
-    elif show_image == 7:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(eighth_image, (0, 0))
-
-    elif show_image == 8:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(ninth_image, (0, 0))
-
-    elif show_image == 9:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(tenth_image, (0, 0))
-
-    elif show_image == 10:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(tenth_image, (0, 0))
-
-    elif show_image == 11:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(eleventh_image, (0, 0))
-
-    elif show_image == 11:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        screen.blit(eleventh_image, (0, 0))
-
-    elif show_image == 12:
-        show_firstimage = 0
-        screen.fill(WHITE)
-        fight2.main()
-        screen.blit(fight_image1, (0, 0))
-        fight2.battle(void, enemy, 0)
-        
-        
-
-    
-
-    # Вывод первого изображения 
-    elif show_firstimage:
-        screen.fill(WHITE)
-        screen.blit(image, (0, 0))
-        image_flag = 1
-
-    elif show_settings == 2:
-        show_settings = 0
-
-    elif show_video == 1:
-        current_time = pygame.time.get_ticks() / 1000
-        if current_time <= duration:
-            frame_surface = make_frame(current_time)
-            screen.blit(frame_surface, (0, 0))
-        else:
-            show_video = 0
-            show_firstimage = 1
-
-    # Вывод меню
-    elif show_menu == 1:
+    if show_menu and menu_image:
         screen.blit(menu_image, (0, 0))
+        screen.blit(square_surface, (screen_width // 2 - 200, screen_height // 2 - 125))
+        screen.blit(square_surface1, (screen_width // 2 - 200, screen_height // 2 - 25))
         screen.blit(text_surface_menu_play, text_rect_menu_play)
         screen.blit(text_surface_menu_settings, text_rect_menu_settings)
         screen.blit(text_surface_menu_settings_2, text_rect_menu_settings_2)
-        screen.blit(square_surface, (1100, 500))
-        screen.blit(square_surface1, (1100, 700))
-
-    # Вывод настроек 
-    if show_settings == 1:
-        screen.fill(WHITE)
-        show_menu = 0
-        screen.fill((255, 255, 255))
+    elif show_settings and settings_image:
         screen.blit(settings_image, (0, 0))
+        # Add settings rendering logic here
+    elif show_firstimage and image_surfaces[images[current_image]]:
+        screen.blit(image_surfaces[images[current_image]], (0, 0))
+    elif show_image:
+        screen.blit(image_surfaces[images[current_image]], (0, 0))
+    elif show_video:
+        if clip:
+            if not paused:
+                current_frame_time += clock.tick(60) / 1000.0
+                if current_frame_time >= duration:
+                    current_frame_time = 0  # Loop video
+            frame = make_frame(current_frame_time)
+            if frame is not None:
+                # Scale the frame to fit the screen while maintaining aspect ratio
+                frame_ratio = frame.get_width() / frame.get_height()
+                screen_ratio = screen_width / screen_height
+                if frame_ratio > screen_ratio:
+                    new_width = screen_width
+                    new_height = int(new_width / frame_ratio)
+                else:
+                    new_height = screen_height
+                    new_width = int(new_height * frame_ratio)
+                frame = pygame.transform.scale(frame, (new_width, new_height))
+                screen.blit(frame, ((screen_width - new_width) // 2, (screen_height - new_height) // 2))
 
-    # Отображение введенного текста
-    if displayed_text:
-        text_surface15 = font_text.render(displayed_text, True, (255, 0, 0))
-        text_rect15 = text_surface15.get_rect()
-        text_rect15.topleft = (10, 1350)  # Координаты для отображения текста
-        screen.blit(text_surface15, text_rect15)
-
-    # Вывод инпут бокса поверх всего остального
-    if show_input == 1:
+    if show_input:
         group.draw(screen)
+        if displayed_text:
+            text_surface = font.render(displayed_text, True, WHITE)
+            screen.blit(text_surface, (10, screen_height - text_surface.get_height() - 10))
 
-    # Обновление экрана (ТОЛЬКО ОДИН РАЗ В КОНЦЕ ЦИКЛА)
+    if show_text:
+        screen.blit(text_surface1, text_rect1)
+
     pygame.display.flip()
-
-    # Ограничение до 60 FPS
     clock.tick(60)
+    counter += 1
 
-# Завершение Pygame
+# At the end of the main loop, save viewed images
+save_viewed_images()
+
+# Clean up
 pygame.quit()
 sys.exit()
